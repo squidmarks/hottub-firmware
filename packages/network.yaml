@@ -1,0 +1,31 @@
+# Wi-Fi, logging, OTA. Wi-Fi only — never enable `ethernet:` on this board.
+#
+# The tub must keep running with no network, so nothing here may reboot the
+# device because Wi-Fi is down (ESPHome's default is a reboot after 15 min).
+
+logger:
+  level: DEBUG
+  hardware_uart: USB_SERIAL_JTAG
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  reboot_timeout: 0s
+  ap:
+    ssid: ${device_name}-fallback
+    password: !secret fallback_ap_password
+
+captive_portal:
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+sensor:
+  - platform: wifi_signal
+    id: wifi_rssi
+    name: Wi-Fi RSSI
+    update_interval: 30s
+  - platform: uptime
+    id: uptime_s
+    name: Uptime

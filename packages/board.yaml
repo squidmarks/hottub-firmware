@@ -1,0 +1,94 @@
+# Waveshare ESP32-S3-POE-ETH-8DI-8RO-C board I/O.
+# Pin map from Waveshare's wiki/demo code and the ESPHome devices page:
+#   I2C SDA=GPIO42 SCL=GPIO41, TCA9554 relay expander @0x20 (EXIO1-8 = CH1-8)
+#   DI1-DI8 = GPIO4-11 (optocoupled, active-low at the GPIO)
+#   PCF85063 RTC on the same I2C bus
+#   GPIO45/47/48 = TF card, GPIO46 = buzzer, GPIO38 = RGB LED, GPIO0 = BOOT
+
+i2c:
+  id: i2c_bus
+  sda: GPIO42
+  scl: GPIO41
+  frequency: 100kHz
+  scan: true
+
+pca9554:
+  - id: relay_hub
+    address: 0x20
+
+# Relays. Every channel is ALWAYS_OFF at boot, and CH4-CH8 are declared only
+# so they are driven to a known state. All are internal: nothing outside the
+# firmware (later: the pump/heater scripts) may switch them.
+#
+# NOTE: the TCA9554 keeps its outputs across an ESP32 reset (it has its own
+# 3V3), so a relay that was on stays on until this setup code runs again.
+switch:
+  - platform: gpio
+    id: relay_run          # CH1 — RUN
+    name: CH1 RUN
+    internal: true
+    restore_mode: ALWAYS_OFF
+    pin: { pca9554: relay_hub, number: 0, mode: { output: true } }
+  - platform: gpio
+    id: relay_select       # CH2 — SELECT (off/NC = LOW, on/NO = HIGH)
+    name: CH2 SELECT
+    internal: true
+    restore_mode: ALWAYS_OFF
+    pin: { pca9554: relay_hub, number: 1, mode: { output: true } }
+  - platform: gpio
+    id: relay_heat         # CH3 — HEAT
+    name: CH3 HEAT
+    internal: true
+    restore_mode: ALWAYS_OFF
+    pin: { pca9554: relay_hub, number: 2, mode: { output: true } }
+  - platform: gpio
+    id: relay_ch4
+    internal: true
+    restore_mode: ALWAYS_OFF
+    pin: { pca9554: relay_hub, number: 3, mode: { output: true } }
+  - platform: gpio
+    id: relay_ch5
+    internal: true
+    restore_mode: ALWAYS_OFF
+    pin: { pca9554: relay_hub, number: 4, mode: { output: true } }
+  - platform: gpio
+    id: relay_ch6
+    internal: true
+    restore_mode: ALWAYS_OFF
+    pin: { pca9554: relay_hub, number: 5, mode: { output: true } }
+  - platform: gpio
+    id: relay_ch7
+    internal: true
+    restore_mode: ALWAYS_OFF
+    pin: { pca9554: relay_hub, number: 6, mode: { output: true } }
+  - platform: gpio
+    id: relay_ch8
+    internal: true
+    restore_mode: ALWAYS_OFF
+    pin: { pca9554: relay_hub, number: 7, mode: { output: true } }
+
+binary_sensor:
+  - platform: gpio
+    id: sense_flow         # DI1 — 24V_LOW after PS1
+    name: DI1 Flow
+    pin: { number: GPIO4, mode: INPUT_PULLUP, inverted: true }
+    filters:
+      - delayed_on_off: 50ms
+    on_state:
+      - logger.log:
+          format: "DI1 SENSE_FLOW -> %s"
+          args: ['x ? "HIGH" : "LOW"']
+  - platform: gpio
+    id: sense_temp         # DI2 — 24V_LOW after PS1 and HL1
+    name: DI2 Temp OK
+    pin: { number: GPIO5, mode: INPUT_PULLUP, inverted: true }
+    filters:
+      - delayed_on_off: 50ms
+    on_state:
+      - logger.log:
+          format: "DI2 SENSE_TEMP -> %s"
+          args: ['x ? "HIGH" : "LOW"']
+
+time:
+  - platform: pcf85063
+    id: rtc_time

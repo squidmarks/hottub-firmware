@@ -1,0 +1,23 @@
+# Hot tub controller — Waveshare ESP32-S3-POE-ETH-8DI-8RO-C
+#
+# Phase 1 (bring-up): board, relays forced off, DI1/DI2, 1-Wire discovery.
+# No pump/heater logic yet — nothing in this config ever turns a relay on.
+
+substitutions:
+  device_name: hottub
+  friendly_name: Hot Tub
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+
+esp32:
+  board: esp32-s3-devkitc-1
+  flash_size: 16MB
+  framework:
+    type: esp-idf
+
+packages:
+  network: !include packages/network.yaml
+  board: !include packages/board.yaml
+  sensors: !include packages/sensors.yaml

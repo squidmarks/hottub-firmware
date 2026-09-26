@@ -1,0 +1,10 @@
+# DS18B20 probes on the shared 1-Wire bus (GPIO1, 4.7k pull-up at the header).
+#
+# Discovery mode: no dallas_temp sensors yet. The one_wire bus logs every
+# address it finds at boot. Once we know which address is which probe, add
+# `dallas_temp` sensors with `address:` pinned to water_temp / outdoor_temp.
+
+one_wire:
+  - platform: gpio
+    id: ow_bus
+    pin: GPIO1
