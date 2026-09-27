@@ -121,7 +121,7 @@ RJ45/Ethernet is not used — the board runs Wi-Fi.
 | U2 | DS18B20 waterproof probes (×2: tub water, outdoor air), sharing one 1-Wire line |
 | R1 | 4.7 kΩ resistor, the single 1-Wire pull-up, at the header, between GPIO1 and 3V3 |
 | S1 | Pneumatic (air) push-button switch, garburator style, mounted inside the enclosure; air tube to the button on the tub top. Switches +24 V to DI3 |
-| L1, L2 | 24 V DC panel indicators, green (L1, CH4) and red (L2, CH5), on the enclosure side |
+| LP1, LP2 | 24 V DC panel indicators, green (LP1, CH4) and red (LP2, CH5), on the enclosure side |
 | PS1, HL1 | Existing pressure switch; new NC hi-limit thermostat, 50 °C (122 °F) trip, auto-reset |
 
 ---

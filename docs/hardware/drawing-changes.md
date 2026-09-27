@@ -17,10 +17,10 @@ Add three new circuits off the +24 V rail. All the board channels are dry
 contacts, the same as CH1–CH3.
 
 **a. Indicator lamps**
-- **CH4 — LAMP_GREEN** (board relay channel 4): COM → +24 V, NO → **L1**
-  (green 24 V panel indicator) + terminal, L1 − → 0 V.
-- **CH5 — LAMP_RED** (board relay channel 5): COM → +24 V, NO → **L2**
-  (red 24 V panel indicator) + terminal, L2 − → 0 V.
+- **CH4 — LAMP_GREEN** (board relay channel 4): COM → +24 V, NO → **LP1**
+  (green 24 V panel indicator) + terminal, LP1 − → 0 V.
+- **CH5 — LAMP_RED** (board relay channel 5): COM → +24 V, NO → **LP2**
+  (red 24 V panel indicator) + terminal, LP2 − → 0 V.
 - No flyback diodes needed (lamps, not coils).
 
 **b. Tub air button**
@@ -47,7 +47,7 @@ contacts, the same as CH1–CH3.
 - Add **S1 (air switch)** in the low-voltage area, near a new gland.
 - Add a gland along the bottom edge: **"G5 air-button tube"**. It's small;
   existing G4 is "sensors / IP67 vent".
-- Show **L1 (green) and L2 (red) lamps** on the **enclosure side wall**
+- Show **LP1 (green) and LP2 (red) lamps** on the **enclosure side wall**
   (outside the backplate outline, with a note "enclosure side, visible from
   the house") and the wiring route to CH4/CH5.
 - Board label: "CH1–CH3 to K1/K2/K3, top edge" → **"CH1–CH3 to K1–K3,
@@ -56,5 +56,5 @@ contacts, the same as CH1–CH3.
 
 ## 5. Parts key / shopping list
 
-Already updated in `README.md`: S1 air switch and button, L1/L2 lamps,
+Already updated in `README.md`: S1 air switch and button, LP1/LP2 lamps (not L1/L2 — those are the 240 V legs),
 glands 4 → 5. Carry these into the source if it has its own parts list.
