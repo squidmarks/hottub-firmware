@@ -17,6 +17,12 @@ wifi:
 
 captive_portal:
 
+# Local status page at http://hottub.local/ — read-only for now (relays are
+# internal and don't appear here).
+web_server:
+  port: 80
+  version: 3
+
 ota:
   - platform: esphome
     password: !secret ota_password
