@@ -8,3 +8,12 @@ one_wire:
   - platform: gpio
     id: ow_bus
     pin: GPIO1
+
+# Known probes. Roles are assigned once each probe is installed.
+sensor:
+  - platform: dallas_temp
+    id: probe_a
+    name: Probe A (0x5b0b257ca8dc5528)
+    address: 0x5b0b257ca8dc5528
+    resolution: 12
+    update_interval: 5s
