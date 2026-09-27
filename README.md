@@ -137,6 +137,8 @@ All timings and limits are substitutions at the top of `hottub.yaml`.
 - [ ] MQTT integration with the tub service (`hottub/<unit>/state` and
       `/command`, holds as `hold_s` durations, publishing power and energy too)
 - [ ] Second DS18B20 (outdoor) and choosing water/outdoor probe roles from the web page
+- [ ] Filter cycle: pump LOW for a set time whenever the pump has been idle
+      for a set interval (any pump run resets the timer), configurable on the web page
 - [ ] Freeze protection: forces pump LOW and heat below a threshold, works with
       no network
 - [ ] Decide on an idle eco setpoint (currently idle means no heat)
