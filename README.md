@@ -11,6 +11,9 @@ server and will talk to this firmware over MQTT (not built yet).
 > interlocks are the primary safety system; this firmware is not. Use at your
 > own risk.
 
+Hardware design (schematics, backplate layout, parts list):
+[docs/hardware](docs/hardware/README.md).
+
 ## Safety model
 
 The firmware is designed to be a well-behaved user of hardware that is
