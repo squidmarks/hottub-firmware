@@ -11,8 +11,10 @@ server and will talk to this firmware over MQTT (not built yet).
 > interlocks are the primary safety system; this firmware is not. Use at your
 > own risk.
 
+Firmware specification: [docs/firmware-spec.md](docs/firmware-spec.md).
 Hardware design (schematics, backplate layout, parts list):
-[docs/hardware](docs/hardware/README.md).
+[docs/hardware](docs/hardware/README.md); pending drawing updates are listed
+in [docs/hardware/drawing-changes.md](docs/hardware/drawing-changes.md).
 
 ## Safety model
 
@@ -167,7 +169,7 @@ All timings and limits are substitutions at the top of `hottub.yaml`.
 - heater on/off path, run-on, eco heating and `HEATER_UNKNOWN` (needs 24 V on DI1/DI2)
 - the real air button on DI3, the indicator lamps
 - `OVER_TEMP`
-- everything with real loads (spec bench test 8)
+- everything with real loads (firmware spec §13)
 
 ## Roadmap
 

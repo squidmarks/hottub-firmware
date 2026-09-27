@@ -117,9 +117,11 @@ RJ45/Ethernet is not used — the board runs Wi-Fi.
 | Ref | Part |
 |---|---|
 | PSU | Mean Well HDR-30-24 |
-| U1 | Waveshare ESP32-S3-POE-ETH-8DI-8RO-C, Wi-Fi with SMA antenna, powered from 24 V. CH1 = RUN, CH2 = SELECT, CH3 = HEAT. DI1 reads past PS1 (flow), DI2 reads past HL1 (temp). Sensor bus on GPIO1, internal header row 2 |
+| U1 | Waveshare ESP32-S3-POE-ETH-8DI-8RO-C, Wi-Fi with SMA antenna, powered from 24 V. CH1 = RUN, CH2 = SELECT, CH3 = HEAT, CH4 = green lamp, CH5 = red lamp. DI1 reads past PS1 (flow), DI2 reads past HL1 (temp), DI3 = tub air button. Sensor bus on GPIO1, internal header row 2 |
 | U2 | DS18B20 waterproof probes (×2: tub water, outdoor air), sharing one 1-Wire line |
 | R1 | 4.7 kΩ resistor, the single 1-Wire pull-up, at the header, between GPIO1 and 3V3 |
+| S1 | Pneumatic (air) push-button switch, garburator style, mounted inside the enclosure; air tube to the button on the tub top. Switches +24 V to DI3 |
+| L1, L2 | 24 V DC panel indicators, green (L1, CH4) and red (L2, CH5), on the enclosure side |
 | PS1, HL1 | Existing pressure switch; new NC hi-limit thermostat, 50 °C (122 °F) trip, auto-reset |
 
 ---
@@ -134,6 +136,8 @@ RJ45/Ethernet is not used — the board runs Wi-Fi.
 - **1** 4.7 kΩ resistor, 1/4 W (pack of 10) — the single 1-Wire pull-up
 - **2** 3-way push-in terminal blocks — already have
 - **3** 1N4007 diode — flyback across the K1, K2, K3 coils
+- **1** Pneumatic air switch + tub-top air button and tubing (garburator style) — momentary or latching, firmware handles either
+- **2** 24 V DC panel indicator lamps, green and red, sized for the enclosure side
 - **1** NC hi-limit thermostat, 50 °C (122 °F) trip, auto-reset — only if the heater has no mechanical limit of its own (KSD301-style snap-disc, clamped to the heater tube)
 
 ### Line voltage
@@ -152,7 +156,7 @@ RJ45/Ethernet is not used — the board runs Wi-Fi.
 - **1** Hinged IP67 enclosure, 15 × 11 × 5.1 in — already have (comes with backing board, 350 × 240 mm, 112 mm inside depth)
 - Stainless screws, washers, nyloc nuts for the backing board
 - **4** Nylon standoffs
-- **4** Liquid-tight glands/connectors — feed, pump, heater, sensors — plus a step drill bit for the holes
+- **5** Liquid-tight glands/connectors — feed, pump, heater, sensors, air-button tube — plus a step drill bit for the holes
 - **1** SMA bulkhead extension (optional) — the antenna can stand up on its own at 112 mm depth for a short antenna; a long whip needs to lie flat or use this extension
 - **1** Breather vent plug (IP67-rated) and desiccant pack
 - Slotted wire duct, cable ties, labels
