@@ -76,6 +76,13 @@ there, so only one out-leg and two return taps need to travel the
 cable. Both temperature probes (tub water, outdoor air) share this
 same run.
 
+**Additions not yet on the drawings:**
+
+- **Tub air button:** pneumatic momentary switch mounted inside the
+  enclosure (air tube in through a gland). Contact switches +24 V to **DI3**.
+- **Indicator lamps:** green and red 24 V panel indicators on the enclosure
+  side. **CH4** (green) and **CH5** (red): COM → +24 V, NO → lamp +, lamp − → 0 V.
+
 ---
 
 ## Sheet 3 — Sensing

@@ -42,12 +42,14 @@ switch:
     restore_mode: ALWAYS_OFF
     pin: { pca9554: relay_hub, number: 2, mode: { output: true } }
   - platform: gpio
-    id: relay_ch4
+    id: led_green          # CH4 — green 24 V panel indicator (see leds.yaml)
+    name: CH4 green LED
     internal: true
     restore_mode: ALWAYS_OFF
     pin: { pca9554: relay_hub, number: 3, mode: { output: true } }
   - platform: gpio
-    id: relay_ch5
+    id: led_red            # CH5 — red 24 V panel indicator (see leds.yaml)
+    name: CH5 red LED
     internal: true
     restore_mode: ALWAYS_OFF
     pin: { pca9554: relay_hub, number: 4, mode: { output: true } }
@@ -94,6 +96,24 @@ binary_sensor:
 # Wall-clock time: SNTP when online, written back to the RTC so the clock
 # survives power cuts with no network. Used only for logs and the daily
 # energy reset, never for safety logic (holds are durations).
+  - platform: gpio
+    id: tub_button         # DI3 — pneumatic tub button (switch in the enclosure, +24 V -> DI3)
+    name: DI3 Tub button
+    web_server: { sorting_group_id: grp_io, sorting_weight: 6 }
+    pin: { number: GPIO6, mode: INPUT_PULLUP, inverted: true }
+    filters:
+      - delayed_on_off: 50ms
+    on_state:
+      - logger.log:
+          format: "DI3 TUB_BUTTON -> %s"
+          args: ['x ? "HIGH" : "LOW"']
+      # Momentary: act on press only. Latching: every change is a press.
+      - if:
+          condition:
+            lambda: 'return x || id(button_type).active_index().value_or(0) == 1;'
+          then:
+            - script.execute: button_press
+
 time:
   - platform: pcf85063
     id: rtc_time

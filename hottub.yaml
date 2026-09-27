@@ -10,7 +10,7 @@ substitutions:
   deadband_f: "0.5"         # heat on at target - band, off at target + band
   min_target_f: "60"
   max_target_f: "104"
-  eco_f: "85"               # (not used yet: idle currently means no heat)
+  eco_f: "85"               # default eco temperature (settable on the web page)
 
   # Pump / heater timing
   pump_switch_delay: 1s     # §5 wait between SELECT change and RUN
@@ -21,6 +21,7 @@ substitutions:
 
   # Holds and diagnostics
   max_hold_min: "240"
+  filter_max_min: "240"     # cap on a filter cycle extended to reach eco
   heater_check_min: "15"    # HEATER_UNKNOWN if heat on this long...
   heater_min_rise_f: "0.5"  # ...and water rose less than this
   sensor_stale_s: "30"
@@ -47,3 +48,4 @@ packages:
   pump: !include packages/pump.yaml
   control: !include packages/control.yaml
   power: !include packages/power.yaml
+  leds: !include packages/leds.yaml

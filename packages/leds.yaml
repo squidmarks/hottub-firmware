@@ -1,0 +1,58 @@
+# Enclosure indicator lamps: green on CH4, red on CH5 (24 V panel indicators).
+#
+# They're switched by mechanical relays (~10M operations at lamp load), so
+# anything continuous is solid on/off and blinks are rare, brief events:
+#
+#   Both on 2 s          lamp test at boot
+#   Green solid          pump running
+#   Green 3 quick flashes command received (web/MQTT hold, Stop, tub button)
+#   Green blinks off 1 s every 30 s   heater is on
+#   Red solid            fault (see the web page for which one)
+#   Red blinks 1 s every 60 s         Wi-Fi down (control still works)
+#
+# Heater blink ≈ 2.9k ops/day and Wi-Fi blink ≈ 1.4k ops/day: years of life.
+
+globals:
+  - { id: led_tick, type: int, initial_value: '0' }
+
+esphome:
+  on_boot:
+    priority: -100
+    then:
+      - switch.turn_on: led_green
+      - switch.turn_on: led_red
+      - delay: 2s
+      - switch.turn_off: led_green
+      - switch.turn_off: led_red
+
+script:
+  - id: led_ack
+    mode: restart
+    then:
+      - repeat:
+          count: 3
+          then:
+            - switch.turn_on: led_green
+            - delay: 250ms
+            - switch.turn_off: led_green
+            - delay: 250ms
+
+interval:
+  - interval: 1s
+    then:
+      - lambda: |-
+          if (millis() < ${boot_hold_s} * 1000UL) return;
+          id(led_tick)++;
+          auto set = [](switch_::Switch *s, bool on) {
+            if (s->state != on) { if (on) s->turn_on(); else s->turn_off(); }
+          };
+
+          if (!id(led_ack)->is_running()) {
+            bool green = id(relay_run).state;
+            if (id(relay_heat).state && id(led_tick) % 30 == 0) green = !green;
+            set(id(led_green), green);
+          }
+
+          bool red = id(fault_text).has_state() && id(fault_text).state != "NONE";
+          if (!wifi::global_wifi_component->is_connected() && id(led_tick) % 60 == 0) red = !red;
+          set(id(led_red), red);

@@ -30,6 +30,7 @@ web_server:
     - { id: grp_status, name: Status, sorting_weight: 20 }
     - { id: grp_io, name: Relays and inputs, sorting_weight: 30 }
     - { id: grp_power, name: Power, sorting_weight: 35 }
+    - { id: grp_settings, name: Settings, sorting_weight: 38 }
     - { id: grp_diag, name: Diagnostics, sorting_weight: 40 }
 
 ota:

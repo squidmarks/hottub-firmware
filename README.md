@@ -42,8 +42,11 @@ On top of that, the firmware:
 | CH1 | RUN: 24 V to the pump coils |
 | CH2 | SELECT: NC = pump LOW (K1), NO = pump HIGH (K2) |
 | CH3 | HEAT: heater coil (K3), fed via PS1 + HL1 |
+| CH4 | green 24 V panel indicator |
+| CH5 | red 24 V panel indicator |
 | DI1 | SENSE_FLOW: high = pump on LOW and PS1 closed |
 | DI2 | SENSE_TEMP: high = flow present and HL1 not tripped |
+| DI3 | tub air button (pneumatic switch inside the enclosure, +24 V → DI3) |
 | GPIO1 | 1-Wire bus, DS18B20 probes (4.7 kΩ pull-up at the header) |
 | I²C (GPIO42/41) | TCA9554 relay expander @ 0x20, PCF85063 RTC @ 0x51 |
 
@@ -58,8 +61,10 @@ packages/
   board.yaml           I²C, relays (forced off), DI1/DI2, RTC + SNTP
   sensors.yaml         1-Wire bus and DS18B20 probes
   pump.yaml            pump_set: the only script that moves CH1/CH2
-  control.yaml         1 s control loop: holds, thermostat, faults, web controls
+  control.yaml         1 s control loop: holds, filter cycles, tub button,
+                       quiet mode, thermostat, faults, web controls
   power.yaml           estimated power and energy
+  leds.yaml            green/red enclosure indicator lamps
 secrets.example.yaml   template for secrets.yaml (gitignored)
 ```
 
@@ -86,15 +91,33 @@ Network log streaming isn't enabled (no native API yet), so read logs over USB:
 `web_password` in `secrets.yaml`).
 
 - **Control:** Mode (Off / Pump Low / Pump High / Heat), target temperature
-  (60–104 °F), duration (1–240 min), Start, Stop. Heat means pump LOW plus the
-  thermostat.
-- **Status:** water temperature, active hold, time remaining, pump state, heat
-  requested, fault
+  (60–104 °F), duration (1–240 min), Start, Stop, Filter now. Heat means pump
+  LOW plus the thermostat.
+- **Status:** water temperature, activity (what's driving the pump and for how
+  long), active hold, pump state, heat requested, fault
+- **Settings:** eco temperature, filter interval and length, button session
+  length, quiet period, tub button type (momentary/latching)
 - **Relays and inputs:** CH1–CH3 and DI1/DI2 live states
 - **Power:** estimated power, energy today, energy total
 
 ## Control behavior
 
+Pump demand, highest priority first: quiet → tub button → hold → filter
+cycle → hold grace → off. Heater run-on overrides off. Freeze protection (to
+come) will override everything.
+
+- **Tub button** (DI3): pump off → LOW, LOW → HIGH, HIGH → **quiet**.
+  Button sessions last 30 min (setting); pressing again restarts the time.
+- **Quiet:** everything off for 10 min (setting), even during a Heat hold.
+  Pump-only holds are cancelled; Heat holds and filter cycles resume afterwards.
+  A button press during quiet starts LOW. Web **Stop** also ends in quiet, so
+  an eco filter cycle doesn't restart the pump immediately.
+- **Filter cycle:** pump LOW for 60 min (setting) whenever there's been no flow
+  for 12 h (setting). Flow means DI1 high on LOW, or the pump on HIGH, so any
+  soak or heat cycle resets the timer. It also starts early if the water drops
+  below eco. During a filter cycle the heater holds the **eco temperature**
+  (settable down to 34 °F, i.e. frost protection only), and the cycle extends
+  up to 4 h to reach it.
 - **Holds:** starting a hold runs the chosen mode for the chosen duration.
   Starting a new hold replaces the current one and clears any latched fault.
 - **Hold expiry:** heat drops immediately, and the pump keeps running for a 30 s
@@ -102,7 +125,7 @@ Network log streaming isn't enabled (no native API yet), so read logs over USB:
 - **Heater run-on:** whenever heat drops, the pump keeps running on LOW for 60 s.
 - **Thermostat:** heat comes on at target − 0.5 °F and goes off at target + 0.5 °F.
   Heat is only requested once the pump has been on LOW for 10 s.
-- **Faults** latch a heat lockout until the next hold:
+- **Faults** latch a heat lockout until the next hold or scheduled filter cycle:
 
   | Fault | Condition |
   |---|---|
@@ -115,6 +138,17 @@ Network log streaming isn't enabled (no native API yet), so read logs over USB:
   (4.4 A), HIGH 2880 W (12 A), heater 4800 W (12 Ω at 240 V). The heater only
   counts while CH3 is on and DI2 is high.
 
+- **Indicator lamps** (mechanical relays, so no continuous blinking):
+
+  | Lamp | Meaning |
+  |---|---|
+  | both on 2 s | lamp test at boot |
+  | green solid | pump running |
+  | green 3 quick flashes | command received (hold, Stop, tub button) |
+  | green blinks off 1 s every 30 s | heater on |
+  | red solid | fault (details on the web page) |
+  | red blinks 1 s every 60 s | Wi-Fi down; control still works |
+
 All timings and limits are substitutions at the top of `hottub.yaml`.
 
 ## Status
@@ -126,9 +160,12 @@ All timings and limits are substitutions at the top of `hottub.yaml`.
 - `NO_FLOW` detection and heat lockout
 - 1-Wire probe discovery
 - web auth
+- filter cycle start (below eco), tub button OFF → LOW → HIGH → quiet → LOW,
+  Stop → quiet (button simulated from the web page)
 
 **Not yet verified:**
-- heater on/off path, run-on and `HEATER_UNKNOWN` (needs 24 V on DI1/DI2)
+- heater on/off path, run-on, eco heating and `HEATER_UNKNOWN` (needs 24 V on DI1/DI2)
+- the real air button on DI3, the indicator lamps
 - `OVER_TEMP`
 - everything with real loads (spec bench test 8)
 
@@ -137,10 +174,8 @@ All timings and limits are substitutions at the top of `hottub.yaml`.
 - [ ] MQTT integration with the tub service (`hottub/<unit>/state` and
       `/command`, holds as `hold_s` durations, publishing power and energy too)
 - [ ] Second DS18B20 (outdoor) and choosing water/outdoor probe roles from the web page
-- [ ] Filter cycle: pump LOW for a set time whenever the pump has been idle
-      for a set interval (any pump run resets the timer), configurable on the web page
 - [ ] Freeze protection: forces pump LOW and heat below a threshold, works with
       no network
-- [ ] Decide on an idle eco setpoint (currently idle means no heat)
+- [ ] Confirm the tub button type (momentary vs latching) on the bench
 - [ ] Handle ESPHome safe mode: the relay expander keeps its outputs across an
       ESP32 reset, so a boot loop could leave a relay latched
