@@ -17,11 +17,20 @@ wifi:
 
 captive_portal:
 
-# Local status page at http://hottub.local/ — read-only for now (relays are
-# internal and don't appear here).
+# Local control/status page at http://hottub.local/
 web_server:
   port: 80
   version: 3
+  auth:
+    type: digest
+    username: !secret web_username
+    password: !secret web_password
+  sorting_groups:
+    - { id: grp_control, name: Control, sorting_weight: 10 }
+    - { id: grp_status, name: Status, sorting_weight: 20 }
+    - { id: grp_io, name: Relays and inputs, sorting_weight: 30 }
+    - { id: grp_power, name: Power, sorting_weight: 35 }
+    - { id: grp_diag, name: Diagnostics, sorting_weight: 40 }
 
 ota:
   - platform: esphome
@@ -32,6 +41,8 @@ sensor:
     id: wifi_rssi
     name: Wi-Fi RSSI
     update_interval: 30s
+    web_server: { sorting_group_id: grp_diag }
   - platform: uptime
     id: uptime_s
     name: Uptime
+    web_server: { sorting_group_id: grp_diag }

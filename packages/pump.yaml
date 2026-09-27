@@ -1,0 +1,41 @@
+# Pump speed sequencing (spec §5). This script is the ONLY place that changes
+# CH1 (RUN) or CH2 (SELECT) after boot. Callers must check is_running() first;
+# mode: single means an overlapping request is rejected, and the control loop
+# simply re-issues it on its next tick once the transition has finished.
+#
+# pump_state: 0 = OFF, 1 = LOW, 2 = HIGH (last *completed* state).
+
+script:
+  - id: pump_set
+    mode: single
+    parameters:
+      target: int
+    then:
+      - logger.log:
+          format: "Pump transition -> %s"
+          args: ['target == 2 ? "HIGH" : (target == 1 ? "LOW" : "OFF")']
+      # Heat is only ever valid on LOW; drop it before touching the pump.
+      - switch.turn_off: relay_heat
+      # 1. Drop RUN.
+      - switch.turn_off: relay_run
+      - logger.log: "  CH3 HEAT off, CH1 RUN off"
+      # Let CH1's contact finish opening before CH2 moves, so CH2 never
+      # switches while 24V_RUN is still live (not in the spec; belt and braces).
+      - delay: 100ms
+      # 2. Set SELECT: off/NC = LOW (and OFF), on/NO = HIGH.
+      - lambda: |-
+          if (target == 2) id(relay_select).turn_on();
+          else id(relay_select).turn_off();
+          ESP_LOGD("pump", "  CH2 SELECT %s", target == 2 ? "on (NO, HIGH)" : "off (NC, LOW)");
+      # 3. Wait.
+      - delay: ${pump_switch_delay}
+      # 4. Raise RUN unless the target is OFF.
+      - if:
+          condition:
+            lambda: 'return target != 0;'
+          then:
+            - switch.turn_on: relay_run
+            - logger.log: "  CH1 RUN on"
+      - lambda: |-
+          id(pump_state) = target;
+          id(pump_since) = millis();

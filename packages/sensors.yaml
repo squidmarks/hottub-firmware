@@ -1,19 +1,28 @@
 # DS18B20 probes on the shared 1-Wire bus (GPIO1, 4.7k pull-up at the header).
-#
-# Discovery mode: no dallas_temp sensors yet. The one_wire bus logs every
-# address it finds at boot. Once we know which address is which probe, add
-# `dallas_temp` sensors with `address:` pinned to water_temp / outdoor_temp.
+# Probes are identified by factory address, not wiring position. Any new probe
+# shows up in the boot log's one_wire "Found devices" list.
 
 one_wire:
   - platform: gpio
     id: ow_bus
     pin: GPIO1
 
-# Known probes. Roles are assigned once each probe is installed.
 sensor:
+  # Probe A. Provisionally the water probe until both are installed.
   - platform: dallas_temp
-    id: probe_a
-    name: Probe A (0x5b0b257ca8dc5528)
+    id: water_temp
+    name: Water temperature
     address: 0x5b0b257ca8dc5528
     resolution: 12
     update_interval: 5s
+    unit_of_measurement: "°F"
+    accuracy_decimals: 1
+    filters:
+      # Drop the DS18B20 power-on value (85 °C) and physically implausible
+      # readings, then convert to °F.
+      - lambda: |-
+          if (x == 85.0f || x < -40.0f || x > 60.0f) return {};
+          return x * 1.8f + 32.0f;
+    on_value:
+      - lambda: 'id(water_last_ms) = millis();'
+    web_server: { sorting_group_id: grp_status, sorting_weight: 0 }

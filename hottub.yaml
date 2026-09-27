@@ -1,11 +1,34 @@
 # Hot tub controller — Waveshare ESP32-S3-POE-ETH-8DI-8RO-C
 #
-# Phase 1 (bring-up): board, relays forced off, DI1/DI2, 1-Wire discovery.
-# No pump/heater logic yet — nothing in this config ever turns a relay on.
+# See docs in each package. Tunable constants live here.
 
 substitutions:
   device_name: hottub
   friendly_name: Hot Tub
+
+  # Thermostat
+  deadband_f: "0.5"         # heat on at target - band, off at target + band
+  min_target_f: "60"
+  max_target_f: "104"
+  eco_f: "85"               # (not used yet: idle currently means no heat)
+
+  # Pump / heater timing
+  pump_switch_delay: 1s     # §5 wait between SELECT change and RUN
+  runon_s: "60"             # pump keeps running LOW after heat drops
+  grace_s: "30"             # pump keeps running after a hold expires
+  flow_settle_s: "10"       # time on LOW before DI1/DI2 are trusted
+  boot_hold_s: "5"          # no relay commands this soon after boot
+
+  # Holds and diagnostics
+  max_hold_min: "240"
+  heater_check_min: "15"    # HEATER_UNKNOWN if heat on this long...
+  heater_min_rise_f: "0.5"  # ...and water rose less than this
+  sensor_stale_s: "30"
+
+  # Estimated loads for power tracking (240 V)
+  pump_low_w: "1056"        # 4.4 A
+  pump_high_w: "2880"       # 12 A
+  heater_w: "4800"          # 12 ohm
 
 esphome:
   name: ${device_name}
@@ -21,3 +44,6 @@ packages:
   network: !include packages/network.yaml
   board: !include packages/board.yaml
   sensors: !include packages/sensors.yaml
+  pump: !include packages/pump.yaml
+  control: !include packages/control.yaml
+  power: !include packages/power.yaml

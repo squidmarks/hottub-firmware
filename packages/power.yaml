@@ -1,0 +1,52 @@
+# Estimated power and energy. There's no current sensing; power is inferred
+# from what's actually running, using measured/nameplate loads:
+#   pump LOW  4.4 A x 240 V ≈ 1056 W
+#   pump HIGH 12 A  x 240 V ≈ 2880 W
+#   heater    12 Ω at 240 V ≈ 4800 W
+# The heater only counts when CH3 is on AND DI2 is high (interlock chain
+# closed up to CH3), so a tripped PS1/HL1 doesn't inflate the numbers.
+
+sensor:
+  - platform: template
+    id: power_w
+    name: Power (estimated)
+    unit_of_measurement: W
+    device_class: power
+    state_class: measurement
+    accuracy_decimals: 0
+    update_interval: 5s
+    lambda: |-
+      float w = 0;
+      if (id(relay_run).state && !id(pump_set)->is_running()) {
+        if (id(pump_state) == 1) w += ${pump_low_w};
+        else if (id(pump_state) == 2) w += ${pump_high_w};
+      }
+      if (id(relay_heat).state && id(sense_temp).state) w += ${heater_w};
+      return w;
+    web_server: { sorting_group_id: grp_power, sorting_weight: 1 }
+
+  - platform: total_daily_energy
+    id: energy_today
+    name: Energy today
+    power_id: power_w
+    restore: true
+    unit_of_measurement: kWh
+    accuracy_decimals: 2
+    filters:
+      - multiply: 0.001
+    web_server: { sorting_group_id: grp_power, sorting_weight: 2 }
+
+  - platform: integration
+    id: energy_total
+    name: Energy total
+    sensor: power_w
+    time_unit: h
+    integration_method: left
+    restore: true
+    unit_of_measurement: kWh
+    device_class: energy
+    state_class: total_increasing
+    accuracy_decimals: 2
+    filters:
+      - multiply: 0.001
+    web_server: { sorting_group_id: grp_power, sorting_weight: 3 }
