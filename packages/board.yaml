@@ -92,10 +92,6 @@ binary_sensor:
       - logger.log:
           format: "DI2 SENSE_TEMP -> %s"
           args: ['x ? "HIGH" : "LOW"']
-
-# Wall-clock time: SNTP when online, written back to the RTC so the clock
-# survives power cuts with no network. Used only for logs and the daily
-# energy reset, never for safety logic (holds are durations).
   - platform: gpio
     id: tub_button         # DI3 — pneumatic tub button (switch in the enclosure, +24 V -> DI3)
     name: DI3 Tub button
@@ -114,6 +110,9 @@ binary_sensor:
           then:
             - script.execute: button_press
 
+# Wall-clock time: SNTP when online, written back to the RTC so the clock
+# survives power cuts with no network. Used only for logs and the daily
+# energy reset, never for safety logic (holds are durations).
 time:
   - platform: pcf85063
     id: rtc_time
