@@ -96,9 +96,9 @@ Network log streaming isn't enabled (no native API yet), so read logs over USB:
 - **Control:** Mode (Off / Pump Low / Pump High / Heat), target temperature
   (60–104 °F), duration (1–240 min), Start, Stop, Filter now. Heat means pump
   LOW plus the thermostat.
-- **Status:** water temperature, activity (what's driving the pump and for how
+- **Status:** water and outdoor temperature, activity (what's driving the pump and for how
   long), active hold, pump state, heat requested, fault
-- **Settings:** eco temperature, filter interval and length, button session
+- **Settings:** which probe is water (the other is outdoor), eco temperature, filter interval and length, button session
   length, quiet period, tub button type (momentary/latching)
 - **Relays and inputs:** CH1–CH3 and DI1/DI2 live states
 - **Power:** estimated power, energy today, energy total
@@ -179,7 +179,6 @@ All timings and limits are substitutions at the top of `hottub.yaml`.
 
 - [ ] MQTT integration with the tub service (`hottub/<unit>/state` and
       `/command`, holds as `hold_s` durations, publishing power and energy too)
-- [ ] Second DS18B20 (outdoor) and choosing water/outdoor probe roles from the web page
 - [ ] Freeze protection: forces pump LOW and heat below a threshold, works with
       no network
 - [ ] Confirm the tub button type (momentary vs latching) on the bench

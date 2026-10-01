@@ -7,11 +7,17 @@ one_wire:
     id: ow_bus
     pin: GPIO1
 
+globals:
+  - { id: probe_a_ms, type: uint32_t, initial_value: '0' }
+  - { id: probe_b_ms, type: uint32_t, initial_value: '0' }
+
+# Both probes are read as raw "Probe A/B" (diagnostics). A web setting picks
+# which one is the water probe; the other is outdoor. water_temp and
+# outdoor_temp are what the rest of the firmware uses.
 sensor:
-  # Probe A. Provisionally the water probe until both are installed.
   - platform: dallas_temp
-    id: water_temp
-    name: Water temperature
+    id: probe_a
+    name: Probe A (…5528)
     address: 0x5b0b257ca8dc5528
     resolution: 12
     update_interval: 5s
@@ -24,8 +30,69 @@ sensor:
           if (x == 85.0f || x < -40.0f || x > 60.0f) return {};
           return x * 1.8f + 32.0f;
     on_value:
-      - lambda: 'id(water_last_ms) = millis();'
+      - lambda: 'id(probe_a_ms) = millis();'
+      - script.execute: publish_probe_roles
+    web_server: { sorting_group_id: grp_diag, sorting_weight: 3 }
+  - platform: dallas_temp
+    id: probe_b
+    name: Probe B (…2928)
+    address: 0x310b257cdc352928
+    resolution: 12
+    update_interval: 5s
+    unit_of_measurement: "°F"
+    accuracy_decimals: 1
+    filters:
+      - lambda: |-
+          if (x == 85.0f || x < -40.0f || x > 60.0f) return {};
+          return x * 1.8f + 32.0f;
+    on_value:
+      - lambda: 'id(probe_b_ms) = millis();'
+      - script.execute: publish_probe_roles
+    web_server: { sorting_group_id: grp_diag, sorting_weight: 4 }
+
+  - platform: template
+    id: water_temp
+    name: Water temperature
+    unit_of_measurement: "°F"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    update_interval: never
     web_server: { sorting_group_id: grp_status, sorting_weight: 0 }
+  - platform: template
+    id: outdoor_temp
+    name: Outdoor temperature
+    unit_of_measurement: "°F"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    update_interval: never
+    web_server: { sorting_group_id: grp_status, sorting_weight: 0 }
+
+select:
+  - platform: template
+    id: water_probe
+    name: Water probe
+    options: ["Probe A (…5528)", "Probe B (…2928)"]
+    initial_option: "Probe A (…5528)"
+    optimistic: true
+    restore_value: true
+    on_value:
+      - script.execute: publish_probe_roles
+    web_server: { sorting_group_id: grp_settings, sorting_weight: 0 }
+
+script:
+  - id: publish_probe_roles
+    mode: queued
+    then:
+      - lambda: |-
+          const bool a_is_water = id(water_probe).active_index().value_or(0) == 0;
+          sensor::Sensor *w = a_is_water ? id(probe_a) : id(probe_b);
+          sensor::Sensor *o = a_is_water ? id(probe_b) : id(probe_a);
+          // Staleness follows the probe actually assigned to water.
+          id(water_last_ms) = a_is_water ? id(probe_a_ms) : id(probe_b_ms);
+          if (w->has_state()) id(water_temp).publish_state(w->state);
+          if (o->has_state()) id(outdoor_temp).publish_state(o->state);
 
 # Every probe found on the bus at boot, so new/replacement probes can be
 # identified from the web page without a USB log.

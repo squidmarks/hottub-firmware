@@ -271,15 +271,16 @@ Remote commands (web/MQTT) don't beep, so nobody in the tub is startled.
 `http://hottub.local/`, with digest authentication.
 
 - **Control:** mode, target, duration, Start, Stop, Filter now
-- **Status:** water temperature, activity, active hold, time left, pump, heat
+- **Status:** water and outdoor temperature, activity, active hold, time left, pump, heat
   requested, fault
 - **Relays and inputs:** CH1–CH3, DI1–DI3
 - **Power:** estimated power, energy today, energy total. Estimated from relay
   state: pump LOW 1056 W, HIGH 2880 W, heater 4800 W counted only while CH3 is
   on **and** DI2 is high.
-- **Settings:** eco temperature, filter interval and length, button session,
+- **Settings:** water probe (A or B; the other is outdoor), eco temperature, filter interval and length, button session,
   quiet period, button type
-- **Diagnostics:** Wi-Fi RSSI, uptime, "Simulate tub button"
+- **Diagnostics:** Wi-Fi RSSI, uptime, raw Probe A/B readings, 1-Wire
+  devices found at boot, "Simulate tub button"
 
 Holds started from the page go through the same path as MQTT holds.
 
@@ -287,8 +288,6 @@ Holds started from the page go through the same path as MQTT holds.
 
 - Build MQTT (§9) and freeze protection (§8). Decide whether outdoor or water
   temperature drives freeze protection.
-- Connect the outdoor probe, and let the web page choose which probe is water
-  and which is outdoor.
 - Confirm the tub button type (momentary vs latching).
 - Bench-verify the heat path, run-on, eco heating, `OVER_TEMP` and
   `HEATER_UNKNOWN` (needs 24 V on DI1/DI2), then everything with real loads.
