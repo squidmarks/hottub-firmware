@@ -26,3 +26,26 @@ sensor:
     on_value:
       - lambda: 'id(water_last_ms) = millis();'
     web_server: { sorting_group_id: grp_status, sorting_weight: 0 }
+
+# Every probe found on the bus at boot, so new/replacement probes can be
+# identified from the web page without a USB log.
+text_sensor:
+  - platform: template
+    id: ow_devices
+    name: 1-Wire devices
+    entity_category: diagnostic
+    update_interval: never
+    web_server: { sorting_group_id: grp_diag, sorting_weight: 2 }
+
+esphome:
+  on_boot:
+    priority: -100
+    then:
+      - lambda: |-
+          std::string s;
+          for (uint64_t a : id(ow_bus)->get_devices()) {
+            char b[24];
+            snprintf(b, sizeof(b), "%s0x%016llx", s.empty() ? "" : ", ", (unsigned long long) a);
+            s += b;
+          }
+          id(ow_devices).publish_state(s.empty() ? "none found" : s);
