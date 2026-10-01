@@ -39,9 +39,10 @@ because it conflicts with `wifi:` on this board.
 | **CH1** | RUN | Dry contact, COM→+24 V, NO→`24V_RUN` |
 | **CH2** | SELECT | Changeover: NC→`24V_LOW` (K1, pump LOW), NO→K2 (pump HIGH) |
 | **CH3** | HEAT | Dry contact, COM→downstream of PS1+HL1, NO→K3 (heater) |
-| **CH4** | LAMP_GREEN | Dry contact, COM→+24 V, NO→green 24 V panel indicator |
-| **CH5** | LAMP_RED | Dry contact, COM→+24 V, NO→red 24 V panel indicator |
-| CH6–CH8 | spare | driven OFF at boot |
+| **CH4** | LAMP_RED | Dry contact, COM→+24 V, NO→red 24 V panel indicator |
+| **CH5** | LAMP_GREEN | Dry contact, COM→+24 V, NO→green 24 V panel indicator |
+| **CH6** | BUZZER | Dry contact, COM→+24 V, NO→24 V buzzer |
+| CH7–CH8 | spare | driven OFF at boot |
 | **DI1** | SENSE_FLOW | `24V_LOW` after PS1. High = pump on LOW **and** flow |
 | **DI2** | SENSE_TEMP | `24V_LOW` after PS1 **and** HL1. High = flow and hi-limit OK |
 | **DI3** | TUB_BUTTON | +24 V through the pneumatic tub-button switch (inside the enclosure) |
@@ -237,9 +238,9 @@ enclosure** (air tube through a gland), which switches +24 V to **DI3**.
 - Switch type is a setting: **momentary** (act on press) or **latching** (act
   on every change of state). To be confirmed on the bench.
 
-## 11. Indicator lamps
+## 11. Indicator lamps and buzzer
 
-Two 24 V panel indicators on the side of the enclosure, green (CH4) and red
+Two 24 V panel indicators on the side of the enclosure, red (CH4) and green
 (CH5). They're for diagnostics at a distance, e.g. confirming from the house
 that an iPad command reached the tub. Because they're switched by mechanical
 relays (about 10⁷ operations), **continuous states are solid and blinks are
@@ -253,6 +254,17 @@ rare events**:
 | green goes off 1 s every 30 s | heater on |
 | red solid | fault latched (which one is on the web page / MQTT) |
 | red blinks 1 s every 60 s | Wi-Fi down (control still works) |
+
+**Buzzer (CH6)**, events only, mutable with the "Buzzer enabled" setting:
+
+| Sound | Meaning |
+|---|---|
+| 1 short | tub button → LOW (also a chirp at boot) |
+| 2 short | tub button → HIGH |
+| 1 long | tub button → quiet |
+| 3 short | fault latched |
+
+Remote commands (web/MQTT) don't beep, so nobody in the tub is startled.
 
 ## 12. Local web page
 
@@ -291,7 +303,7 @@ Holds started from the page go through the same path as MQTT holds.
 - Holds are **durations** (`hold_s`), not `hold_until` timestamps.
 - Added eco temperature (user setting) and **filter cycles** (§6.2).
 - Added the **tub air button** on DI3 and **quiet mode** (§10).
-- Added **indicator lamps** on CH4/CH5 (§11).
+- Added **indicator lamps** on CH4/CH5 and a **buzzer** on CH6 (§11).
 - Added heater run-on (60 s), hold-expiry grace (30 s), `SENSOR_FAIL`, fault
   latching, and Stop ending in quiet.
 - Added power/energy estimation and the local web page (§12).

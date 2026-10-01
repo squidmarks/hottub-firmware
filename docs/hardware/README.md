@@ -81,7 +81,8 @@ same run.
 - **Tub air button:** pneumatic momentary switch mounted inside the
   enclosure (air tube in through a gland). Contact switches +24 V to **DI3**.
 - **Indicator lamps:** green and red 24 V panel indicators on the enclosure
-  side. **CH4** (green) and **CH5** (red): COM → +24 V, NO → lamp +, lamp − → 0 V.
+  side. **CH4** (red) and **CH5** (green): COM → +24 V, NO → lamp +, lamp − → 0 V.
+- **Buzzer:** 24 V buzzer on **CH6**: COM → +24 V, NO → buzzer +, buzzer − → 0 V.
 
 ---
 
@@ -117,11 +118,12 @@ RJ45/Ethernet is not used — the board runs Wi-Fi.
 | Ref | Part |
 |---|---|
 | PSU | Mean Well HDR-30-24 |
-| U1 | Waveshare ESP32-S3-POE-ETH-8DI-8RO-C, Wi-Fi with SMA antenna, powered from 24 V. CH1 = RUN, CH2 = SELECT, CH3 = HEAT, CH4 = green lamp, CH5 = red lamp. DI1 reads past PS1 (flow), DI2 reads past HL1 (temp), DI3 = tub air button. Sensor bus on GPIO1, internal header row 2 |
+| U1 | Waveshare ESP32-S3-POE-ETH-8DI-8RO-C, Wi-Fi with SMA antenna, powered from 24 V. CH1 = RUN, CH2 = SELECT, CH3 = HEAT, CH4 = red lamp, CH5 = green lamp, CH6 = buzzer. DI1 reads past PS1 (flow), DI2 reads past HL1 (temp), DI3 = tub air button. Sensor bus on GPIO1, internal header row 2 |
 | U2 | DS18B20 waterproof probes (×2: tub water, outdoor air), sharing one 1-Wire line |
 | R1 | 4.7 kΩ resistor, the single 1-Wire pull-up, at the header, between GPIO1 and 3V3 |
 | S1 | Pneumatic (air) push-button switch, garburator style, mounted inside the enclosure; air tube to the button on the tub top. Switches +24 V to DI3 |
-| LP1, LP2 | 24 V DC panel indicators, green (LP1, CH4) and red (LP2, CH5), on the enclosure side |
+| LP1, LP2 | 24 V DC panel indicators, red (LP1, CH4) and green (LP2, CH5), on the enclosure side |
+| BZ1 | 24 V DC buzzer (CH6) |
 | PS1, HL1 | Existing pressure switch; new NC hi-limit thermostat, 50 °C (122 °F) trip, auto-reset |
 
 ---

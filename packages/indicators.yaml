@@ -1,6 +1,7 @@
-# Enclosure indicator lamps: green on CH4, red on CH5 (24 V panel indicators).
+# Enclosure indicator lamps (24 V panel indicators: red on CH4, green on CH5)
+# and buzzer (CH6).
 #
-# They're switched by mechanical relays (~10M operations at lamp load), so
+# Lamps and buzzer are switched by mechanical relays (~10M operations at lamp load), so
 # anything continuous is solid on/off and blinks are rare, brief events:
 #
 #   Both on 2 s          lamp test at boot
@@ -11,6 +12,13 @@
 #   Red blinks 1 s every 60 s         Wi-Fi down (control still works)
 #
 # Heater blink ≈ 2.9k ops/day and Wi-Fi blink ≈ 1.4k ops/day: years of life.
+#
+# Buzzer (events only, mutable with the "Buzzer enabled" setting):
+#   1 short     tub button -> LOW     (also a chirp at boot)
+#   2 short     tub button -> HIGH
+#   1 long      tub button -> quiet
+#   3 short     fault latched
+# Remote commands (web/MQTT) don't beep, so nobody in the tub is startled.
 
 globals:
   - { id: led_tick, type: int, initial_value: '0' }
@@ -21,11 +29,39 @@ esphome:
     then:
       - switch.turn_on: led_green
       - switch.turn_on: led_red
+      - script.execute: { id: beep, count: 1, ms: 100 }
       - delay: 2s
       - switch.turn_off: led_green
       - switch.turn_off: led_red
 
+switch:
+  - platform: template
+    id: buzzer_enabled
+    name: Buzzer enabled
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+    web_server: { sorting_group_id: grp_settings, sorting_weight: 7 }
+
 script:
+  - id: beep
+    mode: restart
+    parameters:
+      count: int
+      ms: int
+    then:
+      - if:
+          condition:
+            switch.is_on: buzzer_enabled
+          then:
+            - repeat:
+                count: !lambda 'return count;'
+                then:
+                  - switch.turn_on: buzzer
+                  - delay: !lambda 'return ms;'
+                  - switch.turn_off: buzzer
+                  - delay: 150ms
+      - switch.turn_off: buzzer
+
   - id: led_ack
     mode: restart
     then:

@@ -48,4 +48,4 @@ packages:
   pump: !include packages/pump.yaml
   control: !include packages/control.yaml
   power: !include packages/power.yaml
-  leds: !include packages/leds.yaml
+  indicators: !include packages/indicators.yaml

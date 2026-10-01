@@ -44,8 +44,9 @@ On top of that, the firmware:
 | CH1 | RUN: 24 V to the pump coils |
 | CH2 | SELECT: NC = pump LOW (K1), NO = pump HIGH (K2) |
 | CH3 | HEAT: heater coil (K3), fed via PS1 + HL1 |
-| CH4 | green 24 V panel indicator |
-| CH5 | red 24 V panel indicator |
+| CH4 | red 24 V panel indicator |
+| CH5 | green 24 V panel indicator |
+| CH6 | 24 V buzzer |
 | DI1 | SENSE_FLOW: high = pump on LOW and PS1 closed |
 | DI2 | SENSE_TEMP: high = flow present and HL1 not tripped |
 | DI3 | tub air button (pneumatic switch inside the enclosure, +24 V → DI3) |
@@ -66,7 +67,7 @@ packages/
   control.yaml         1 s control loop: holds, filter cycles, tub button,
                        quiet mode, thermostat, faults, web controls
   power.yaml           estimated power and energy
-  leds.yaml            green/red enclosure indicator lamps
+  indicators.yaml      red/green enclosure lamps and buzzer
 secrets.example.yaml   template for secrets.yaml (gitignored)
 ```
 
@@ -140,6 +141,9 @@ come) will override everything.
   (4.4 A), HIGH 2880 W (12 A), heater 4800 W (12 Ω at 240 V). The heater only
   counts while CH3 is on and DI2 is high.
 
+- **Buzzer** (CH6, mutable in Settings): tub button → LOW 1 short beep,
+  → HIGH 2 short, → quiet 1 long; fault latched 3 short; boot chirp. Remote
+  commands don't beep.
 - **Indicator lamps** (mechanical relays, so no continuous blinking):
 
   | Lamp | Meaning |

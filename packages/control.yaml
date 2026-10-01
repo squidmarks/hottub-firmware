@@ -136,6 +136,9 @@ script:
           id(last_press_ms) = now;
           id(press_result) = result;
           id(led_ack)->execute();
+          if (result == 1) id(beep)->execute(1, 150);
+          else if (result == 2) id(beep)->execute(2, 150);
+          else id(beep)->execute(1, 700);
 
 interval:
   - interval: 1s
@@ -239,6 +242,7 @@ interval:
           if (live_fault != 0 && id(fault_latched) == 0) {
             id(fault_latched) = live_fault;
             ESP_LOGW("fault", "Fault %s: heat locked out", FAULT_NAMES[live_fault]);
+            id(beep)->execute(3, 150);
           }
           const int shown_fault = live_fault != 0 ? live_fault : id(fault_latched);
 

@@ -42,19 +42,20 @@ switch:
     restore_mode: ALWAYS_OFF
     pin: { pca9554: relay_hub, number: 2, mode: { output: true } }
   - platform: gpio
-    id: led_green          # CH4 — green 24 V panel indicator (see leds.yaml)
-    name: CH4 green LED
+    id: led_red            # CH4 — red 24 V panel indicator (see indicators.yaml)
+    name: CH4 red lamp
     internal: true
     restore_mode: ALWAYS_OFF
     pin: { pca9554: relay_hub, number: 3, mode: { output: true } }
   - platform: gpio
-    id: led_red            # CH5 — red 24 V panel indicator (see leds.yaml)
-    name: CH5 red LED
+    id: led_green          # CH5 — green 24 V panel indicator (see indicators.yaml)
+    name: CH5 green lamp
     internal: true
     restore_mode: ALWAYS_OFF
     pin: { pca9554: relay_hub, number: 4, mode: { output: true } }
   - platform: gpio
-    id: relay_ch6
+    id: buzzer             # CH6 — 24 V buzzer (see indicators.yaml)
+    name: CH6 buzzer
     internal: true
     restore_mode: ALWAYS_OFF
     pin: { pca9554: relay_hub, number: 5, mode: { output: true } }
