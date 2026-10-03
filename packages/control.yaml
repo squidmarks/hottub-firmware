@@ -95,6 +95,47 @@ script:
           id(filter_active) = false;
       - script.execute: led_ack
 
+  # Jets: a button session layered over any hold/filter cycle, so heating
+  # resumes when it ends. level 0 ends the session, 1 = LOW, 2 = HIGH.
+  # Used by the tub button and by the web app / Home Assistant.
+  - id: set_jets
+    parameters:
+      level: int
+    then:
+      - lambda: |-
+          if (level < 0 || level > 2) {
+            ESP_LOGW("button", "Rejected jets level %d", level);
+            return;
+          }
+          if (level == 0) {
+            if (id(btn_mode) != 0) ESP_LOGI("button", "Jets off");
+            id(btn_mode) = 0;
+            id(btn_remaining) = 0;
+          } else {
+            id(btn_mode) = level;
+            id(btn_remaining) = (int) id(button_session_min).state * 60;
+            id(quiet_remaining) = 0;
+            ESP_LOGI("button", "Jets %s for %d min", level == 2 ? "HIGH" : "LOW",
+                     (int) id(button_session_min).state);
+          }
+          id(led_ack)->execute();
+
+  # Quiet: everything off for quiet_min. Pump-only holds are cancelled; Heat
+  # holds and filter cycles resume when quiet ends.
+  - id: start_quiet
+    then:
+      - lambda: |-
+          id(btn_mode) = 0;
+          id(btn_remaining) = 0;
+          id(quiet_remaining) = (int) id(quiet_min).state * 60;
+          if (id(hold_mode) == 1 || id(hold_mode) == 2) {
+            id(hold_mode) = 0;
+            id(hold_remaining) = 0;
+          }
+          id(grace_remaining) = 0;
+          ESP_LOGI("button", "Quiet for %d min", (int) id(quiet_min).state);
+          id(led_ack)->execute();
+
   # Tub air button: OFF -> LOW -> HIGH -> quiet (all off).
   - id: button_press
     then:
@@ -108,34 +149,17 @@ script:
           const int session = (int) id(button_session_min).state * 60;
           int result;
           if (cur == 0) {
-            id(btn_mode) = 1;
-            id(btn_remaining) = session;
-            id(quiet_remaining) = 0;
+            id(set_jets)->execute(1);
             result = 1;
-            ESP_LOGI("button", "Button: pump LOW");
           } else if (cur == 1) {
-            id(btn_mode) = 2;
-            id(btn_remaining) = session;
-            id(quiet_remaining) = 0;
+            id(set_jets)->execute(2);
             result = 2;
-            ESP_LOGI("button", "Button: pump HIGH");
           } else {
-            id(btn_mode) = 0;
-            id(btn_remaining) = 0;
-            id(quiet_remaining) = (int) id(quiet_min).state * 60;
-            // Pump-only holds are cancelled; Heat holds and filter cycles
-            // resume when quiet ends.
-            if (id(hold_mode) == 1 || id(hold_mode) == 2) {
-              id(hold_mode) = 0;
-              id(hold_remaining) = 0;
-            }
-            id(grace_remaining) = 0;
+            id(start_quiet)->execute();
             result = 0;
-            ESP_LOGI("button", "Button: quiet for %d min", (int) id(quiet_min).state);
           }
           id(last_press_ms) = now;
           id(press_result) = result;
-          id(led_ack)->execute();
           if (result == 1) id(beep)->execute(1, 150);
           else if (result == 2) id(beep)->execute(2, 150);
           else id(beep)->execute(1, 700);

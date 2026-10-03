@@ -43,6 +43,21 @@ api:
     - action: stop
       then:
         - script.execute: stop_hold
+    # Jets layer over holds (like the tub button): "off" | "low" | "high".
+    - action: set_jets
+      variables:
+        level: string
+      then:
+        - lambda: |-
+            int l = level == "off" ? 0 : level == "low" ? 1 : level == "high" ? 2 : -1;
+            if (l < 0) {
+              ESP_LOGW("api", "set_jets: unknown level '%s'", level.c_str());
+              return;
+            }
+            id(set_jets)->execute(l);
+    - action: quiet
+      then:
+        - script.execute: start_quiet
 
 # Local control/status page at http://hottub.local/
 web_server:
@@ -61,8 +76,9 @@ web_server:
     - { id: grp_diag, name: Diagnostics, sorting_weight: 40 }
 
 ota:
+  # Encrypted with the API key; that key is what authenticates an upload.
   - platform: esphome
-    password: !secret ota_password
+    encryption: {}
 
 sensor:
   - platform: wifi_signal
