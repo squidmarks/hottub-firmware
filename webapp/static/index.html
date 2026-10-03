@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1d26">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Hot Tub">
+  <title>Hot Tub</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="bar">
+    <h1>Hot Tub</h1>
+    <div class="bar-right">
+      <button class="unit" id="unit" aria-label="Switch units">°F</button>
+      <span class="dot" id="dot" title="Connecting…"></span>
+    </div>
+  </header>
+
+  <main>
+    <div class="offline" id="offline" hidden>Can't reach the tub controller. Showing the last known state.</div>
+    <div class="fault" id="fault" hidden></div>
+
+    <section class="hero" aria-live="polite">
+      <div class="ring" id="ring">
+        <svg viewBox="0 0 200 200" aria-hidden="true">
+          <circle class="track" cx="100" cy="100" r="88"/>
+          <circle class="arc" id="arc" cx="100" cy="100" r="88"/>
+        </svg>
+        <div class="reading">
+          <div class="temp"><span id="water">--</span><span class="deg" id="waterUnit">°F</span></div>
+          <div class="sub" id="heroSub">Water</div>
+        </div>
+      </div>
+      <div class="activity" id="activity">Connecting…</div>
+      <div class="chips">
+        <span class="chip" id="chipPump">Pump —</span>
+        <span class="chip" id="chipHeat">Heater —</span>
+        <span class="chip" id="chipOut">Outside —</span>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Heat</h2>
+      <div class="stepper">
+        <button class="step" id="down" aria-label="Lower">−</button>
+        <div class="target"><span id="target">--</span><span class="deg" id="targetUnit">°F</span></div>
+        <button class="step" id="up" aria-label="Higher">+</button>
+      </div>
+      <div class="seg" id="duration" role="radiogroup" aria-label="For how long">
+        <button data-min="60">1 h</button>
+        <button data-min="120" class="on">2 h</button>
+        <button data-min="180">3 h</button>
+        <button data-min="240">4 h</button>
+      </div>
+      <button class="primary" id="heat">Heat</button>
+    </section>
+
+    <section class="card">
+      <h2>Jets</h2>
+      <div class="seg big" id="jets" role="radiogroup" aria-label="Jets">
+        <button data-level="off">Off</button>
+        <button data-level="low">Low</button>
+        <button data-level="high">High</button>
+      </div>
+    </section>
+
+    <section class="actions">
+      <button class="secondary" id="quiet">Quiet</button>
+      <button class="danger" id="stop">Stop all</button>
+    </section>
+
+    <footer>
+      <span id="power"></span>
+      <a href="/admin">Admin</a>
+    </footer>
+  </main>
+
+  <div class="toast" id="toast" role="status"></div>
+  <script src="common.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

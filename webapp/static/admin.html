@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1d26">
+  <title>Hot Tub Admin</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="bar">
+    <h1><a href="/" class="back" aria-label="Back">‹</a> Admin</h1>
+    <div class="bar-right">
+      <button class="unit" id="unit" aria-label="Switch units">°F</button>
+      <span class="dot" id="dot" title="Connecting…"></span>
+    </div>
+  </header>
+
+  <main>
+    <div class="offline" id="offline" hidden>Can't reach the tub controller.</div>
+    <p class="who" id="who"></p>
+
+    <section class="card">
+      <h2>Settings</h2>
+      <p class="hint">Stored on the controller. Changes apply immediately.</p>
+      <div id="settings" class="settings"></div>
+      <button class="secondary" id="filterNow">Run a filter cycle now</button>
+    </section>
+
+    <section class="card">
+      <h2>Live status</h2>
+      <table class="diag" id="diag"></table>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status"></div>
+  <script src="common.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
