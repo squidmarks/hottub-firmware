@@ -17,6 +17,33 @@ wifi:
 
 captive_portal:
 
+# Home Assistant (and network logs) via the ESPHome native API. HA connects
+# to us; if it doesn't, nothing happens — never reboot over it (the default
+# reboots after 15 min with no client).
+api:
+  encryption:
+    key: !secret api_encryption_key
+  reboot_timeout: 0s
+  actions:
+    # Same time-bounded hold contract as the web page / MQTT.
+    #   mode: "pump_low" | "pump_high" | "heat";  target_f: °F;  hold_s: seconds
+    - action: start_hold
+      variables:
+        mode: string
+        target_f: float
+        hold_s: int
+      then:
+        - lambda: |-
+            int m = mode == "pump_low" ? 1 : mode == "pump_high" ? 2 : mode == "heat" ? 3 : -1;
+            if (m < 0) {
+              ESP_LOGW("api", "start_hold: unknown mode '%s'", mode.c_str());
+              return;
+            }
+            id(start_hold)->execute(m, target_f, hold_s);
+    - action: stop
+      then:
+        - script.execute: stop_hold
+
 # Local control/status page at http://hottub.local/
 web_server:
   port: 80
