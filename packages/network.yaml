@@ -84,9 +84,11 @@ sensor:
   - platform: wifi_signal
     id: wifi_rssi
     name: Wi-Fi RSSI
+    entity_category: diagnostic
     update_interval: 30s
     web_server: { sorting_group_id: grp_diag }
   - platform: uptime
     id: uptime_s
     name: Uptime
+    entity_category: diagnostic
     web_server: { sorting_group_id: grp_diag }

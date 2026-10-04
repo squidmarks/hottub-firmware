@@ -332,6 +332,7 @@ select:
   - platform: template
     id: mode_select
     name: Mode
+    disabled_by_default: true
     options: ["Off", "Pump Low", "Pump High", "Heat"]
     initial_option: "Heat"
     optimistic: true
@@ -339,6 +340,7 @@ select:
   - platform: template
     id: button_type
     name: Tub button type
+    entity_category: config
     options: ["Momentary", "Latching"]
     initial_option: "Momentary"
     optimistic: true
@@ -361,6 +363,7 @@ number:
   - platform: template
     id: hold_minutes
     name: Duration
+    disabled_by_default: true
     unit_of_measurement: min
     min_value: 1
     max_value: ${max_hold_min}
@@ -375,6 +378,7 @@ number:
   - platform: template
     id: eco_f
     name: Eco temperature
+    entity_category: config
     unit_of_measurement: "°F"
     min_value: 34
     max_value: ${max_target_f}
@@ -387,6 +391,7 @@ number:
   - platform: template
     id: filter_interval_h
     name: Filter cycle after no flow for
+    entity_category: config
     unit_of_measurement: h
     min_value: 1
     max_value: 48
@@ -399,6 +404,7 @@ number:
   - platform: template
     id: filter_duration_min
     name: Filter cycle length
+    entity_category: config
     unit_of_measurement: min
     min_value: 10
     max_value: 240
@@ -411,6 +417,7 @@ number:
   - platform: template
     id: button_session_min
     name: Button session length
+    entity_category: config
     unit_of_measurement: min
     min_value: 5
     max_value: 120
@@ -423,6 +430,7 @@ number:
   - platform: template
     id: quiet_min
     name: Quiet period
+    entity_category: config
     unit_of_measurement: min
     min_value: 1
     max_value: 60
@@ -436,6 +444,7 @@ number:
 button:
   - platform: template
     name: Start
+    disabled_by_default: true
     web_server: { sorting_group_id: grp_control, sorting_weight: 4 }
     on_press:
       - lambda: |-
@@ -449,11 +458,14 @@ button:
       - script.execute: stop_hold
   - platform: template
     name: Simulate tub button
+    disabled_by_default: true
+    entity_category: diagnostic
     web_server: { sorting_group_id: grp_diag, sorting_weight: 1 }
     on_press:
       - script.execute: button_press
   - platform: template
     name: Filter now
+    entity_category: config
     web_server: { sorting_group_id: grp_control, sorting_weight: 6 }
     on_press:
       - lambda: |-
@@ -491,13 +503,16 @@ binary_sensor:
     web_server: { sorting_group_id: grp_status, sorting_weight: 5 }
   - platform: template
     name: CH1 RUN
+    entity_category: diagnostic
     lambda: 'return id(relay_run).state;'
     web_server: { sorting_group_id: grp_io, sorting_weight: 1 }
   - platform: template
     name: CH2 SELECT (on = HIGH)
+    entity_category: diagnostic
     lambda: 'return id(relay_select).state;'
     web_server: { sorting_group_id: grp_io, sorting_weight: 2 }
   - platform: template
     name: CH3 HEAT
+    entity_category: diagnostic
     lambda: 'return id(relay_heat).state;'
     web_server: { sorting_group_id: grp_io, sorting_weight: 3 }

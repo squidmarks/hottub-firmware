@@ -74,6 +74,7 @@ binary_sensor:
   - platform: gpio
     id: sense_flow         # DI1 — 24V_LOW after PS1
     name: DI1 Flow
+    entity_category: diagnostic
     web_server: { sorting_group_id: grp_io, sorting_weight: 4 }
     pin: { number: GPIO4, mode: INPUT_PULLUP, inverted: true }
     filters:
@@ -85,6 +86,7 @@ binary_sensor:
   - platform: gpio
     id: sense_temp         # DI2 — 24V_LOW after PS1 and HL1
     name: DI2 Temp OK
+    entity_category: diagnostic
     web_server: { sorting_group_id: grp_io, sorting_weight: 5 }
     pin: { number: GPIO5, mode: INPUT_PULLUP, inverted: true }
     filters:
@@ -96,6 +98,7 @@ binary_sensor:
   - platform: gpio
     id: tub_button         # DI3 — pneumatic tub button (switch in the enclosure, +24 V -> DI3)
     name: DI3 Tub button
+    entity_category: diagnostic
     web_server: { sorting_group_id: grp_io, sorting_weight: 6 }
     pin: { number: GPIO6, mode: INPUT_PULLUP, inverted: true }
     filters:

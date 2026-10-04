@@ -18,6 +18,7 @@ sensor:
   - platform: dallas_temp
     id: probe_a
     name: Probe A (…5528)
+    entity_category: diagnostic
     address: 0x5b0b257ca8dc5528
     resolution: 12
     update_interval: 5s
@@ -36,6 +37,7 @@ sensor:
   - platform: dallas_temp
     id: probe_b
     name: Probe B (…2928)
+    entity_category: diagnostic
     address: 0x310b257cdc352928
     resolution: 12
     update_interval: 5s
@@ -73,6 +75,7 @@ select:
   - platform: template
     id: water_probe
     name: Water probe
+    entity_category: config
     options: ["Probe A (…5528)", "Probe B (…2928)"]
     initial_option: "Probe A (…5528)"
     optimistic: true
