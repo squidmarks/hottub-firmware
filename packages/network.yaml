@@ -73,6 +73,7 @@ api:
               id(keep_warm_f).make_call().set_value(target_f).perform();
               id(quiet_remaining) = 0;
               id(keep_warm).turn_on();
+              id(eco_restart)->execute();  // Set again restarts the eco countdown
             } else {
               id(keep_warm).turn_off();
             }

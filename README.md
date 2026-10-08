@@ -93,6 +93,8 @@ Network log streaming isn't enabled (no native API yet), so read logs over USB:
 `http://hottub.local/`, protected by digest auth (`web_username` /
 `web_password` in `secrets.yaml`).
 
+- **Eco mode** (Settings): when on, a set temperature falls back to eco after
+  2–24 h (restarts on every Set; survives reboots). When off, it holds.
 - **Keep warm:** a switch and temperature (also in the web app as "Keep"):
   holds that temperature until turned off, surviving reboots. The pump only
   runs to heat and for filter cycles. Stop turns it off.

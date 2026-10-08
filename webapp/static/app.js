@@ -5,7 +5,8 @@ const MIN_F = 60, MAX_F = 104;
 let state = {};
 let targetF = null;        // what the stepper shows (°F); null until first state
 let targetTouched = false; // the viewer changed it, so don't overwrite from the tub
-let minutes = 120;         // or "keep"
+// Eco countdown: the controller reports it every ~10 s; tick it locally between.
+let ecoLeft = 0, ecoAt = 0;
 
 function heatingTarget(s) {
   if (s.active_hold === "HEAT") return s.target_temperature;
@@ -36,7 +37,9 @@ function render() {
   if (goal != null && water != null) frac = Math.max(0, Math.min(1, (water - MIN_F) / (goal - MIN_F)));
   $("arc").style.strokeDasharray = `${frac * C} ${C}`;
   $("ring").className = "ring" + (heating ? " heating" : goal != null ? " holding" : "");
-  $("heroSub").textContent = goal != null ? `heating to ${units.show(goal, 0)}${U}` : "Water";
+  $("heroSub").textContent =
+    goal == null ? "Water" : heating ? `heating to ${units.show(goal, 0)}${U}` : `holding ${units.show(goal, 0)}${U}`;
+  renderEco();
 
   $("activity").textContent = s.connected === false ? "Controller offline" : friendlyActivity(s.activity);
   $("chipPump").textContent = `Pump ${s.pump ? s.pump.toLowerCase() : "—"}`;
@@ -48,13 +51,14 @@ function render() {
   $("fault").hidden = !f;
   if (f) $("fault").textContent = FAULTS[f] || f;
 
-  // Keep warm note (only while it's on).
-  $("keepNote").hidden = !s.keep_warm;
-  if (s.keep_warm) {
+  // Without Eco mode a set temperature holds until changed: say so, with a way out.
+  const holding = s.keep_warm && !s.eco_mode;
+  $("keepNote").hidden = !holding;
+  if (holding) {
     $("keepNote").innerHTML =
-      `Keeping warm at ${units.show(s.keep_warm_temperature, 0)}${U} until turned off. ` +
-      `<button class="link" id="keepOff">Turn off</button>`;
-    $("keepOff").onclick = () => run("Keep warm off", () => post("/api/keep-warm", { enable: false }));
+      `Holding ${units.show(s.keep_warm_temperature, 0)}${U} until changed. ` +
+      `<button class="link" id="keepOff">Back to eco</button>`;
+    $("keepOff").onclick = () => run("Back to eco", () => post("/api/keep-warm", { enable: false }));
   }
 
   const jets = /^Button HIGH/.test(s.activity || "") ? "high" : /^Button LOW/.test(s.activity || "") ? "low" : "off";
@@ -63,6 +67,23 @@ function render() {
   $("power").textContent = s.power__estimated_ != null
     ? `${(s.power__estimated_ / 1000).toFixed(1)} kW now · ${(s.energy_today ?? 0).toFixed(1)} kWh today` : "";
 }
+
+function hm(sec) {
+  const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = Math.floor(sec % 60);
+  return h ? `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}` : `${m}:${String(s).padStart(2, "0")}`;
+}
+
+// Leaf + "eco in 3:42" (a set temperature is counting down) or "eco 85°F" (idle).
+function renderEco() {
+  const s = state;
+  $("eco").hidden = !s.eco_mode;
+  if (!s.eco_mode) return;
+  const left = Math.max(0, ecoLeft - (Date.now() - ecoAt) / 1000);
+  $("ecoText").textContent = s.keep_warm && left > 0
+    ? `eco in ${hm(left)}`
+    : `eco ${units.show(s.eco_temperature, 0)}${units.label()}`;
+}
+setInterval(() => { if (state.eco_mode && state.keep_warm) renderEco(); }, 1000);
 
 function stepTarget(dir) {
   if (targetF == null) targetF = 100;
@@ -86,23 +107,14 @@ $("up").onclick = () => stepTarget(+1);
 $("down").onclick = () => stepTarget(-1);
 $("unit").onclick = () => { units.toggle(); render(); chart.render(); };
 
-$("duration").onchange = (e) => {
-  minutes = e.target.value === "keep" ? "keep" : +e.target.value;
-};
+
 
 $("heat").onclick = () => {
   const t = `${units.show(targetF, units.c ? 1 : 0)}${units.label()}`;
-  if (minutes === "keep") {
-    run(`Keeping warm at ${t}`, async () => {
-      await post("/api/keep-warm", { enable: true, target_f: targetF });
-      targetTouched = false;
-    });
-  } else {
-    run(`Heating to ${t} for ${minutes / 60} h`, async () => {
-      await post("/api/heat", { target_f: targetF, minutes });
-      targetTouched = false;
-    });
-  }
+  run(state.eco_mode ? `Set to ${t} (eco later)` : `Holding ${t}`, async () => {
+    await post("/api/keep-warm", { enable: true, target_f: targetF });
+    targetTouched = false;
+  });
 };
 
 document.querySelectorAll("#jets button").forEach((b) => {
@@ -140,6 +152,10 @@ setInterval(() => document.visibilityState === "visible" && !$("panelHist").hidd
 
 live((s) => {
   setDot(s);
-  if (s) { state = s; render(); }
+  if (s) {
+    if (s.eco_countdown !== state.eco_countdown || !ecoAt) { ecoLeft = s.eco_countdown || 0; ecoAt = Date.now(); }
+    state = s;
+    render();
+  }
 });
 render();

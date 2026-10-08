@@ -40,6 +40,10 @@
         <div class="reading">
           <div class="temp"><span id="water">--</span><span class="deg" id="waterUnit">°F</span></div>
           <div class="sub" id="heroSub">Water</div>
+          <div class="eco" id="eco" hidden>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19c0-9 6-14 15-14 0 9-5 15-14 15"/><path d="M5 19c3-5 6-8 10-10"/></svg>
+            <span id="ecoText"></span>
+          </div>
           <div class="out">Outside <span id="outdoor">--</span><span id="outUnit">°F</span></div>
         </div>
       </div>
@@ -77,12 +81,6 @@
         <div class="target"><span id="target">--</span><span class="deg" id="targetUnit">°F</span></div>
         <button class="step" id="up" aria-label="Higher">+</button>
       </div>
-      <select id="duration" aria-label="For how long">
-        <option value="60">1 h</option>
-        <option value="120" selected>2 h</option>
-        <option value="240">4 h</option>
-        <option value="keep">Keep</option>
-      </select>
       <button class="primary" id="heat">Set</button>
     </section>
     <p class="keepnote" id="keepNote" hidden></p>

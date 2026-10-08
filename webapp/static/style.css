@@ -214,3 +214,10 @@ footer a { color: var(--accent); text-decoration: none; }
 .setrow .primary { width: auto; flex: none; margin-top: 0; padding: 10px 16px; font-size: 16px; }
 .keepnote { margin: 6px 0 0; }
 .chartcard { margin-top: 0; }
+
+/* --- eco leaf + countdown in the dial ------------------------------------- */
+:root { --eco: #24a148; }
+@media (prefers-color-scheme: dark) { :root { --eco: #4cd07a; } }
+.eco { display: flex; align-items: center; gap: 4px; margin-top: 6px; font-size: 14px; font-weight: 600;
+  color: var(--eco); font-variant-numeric: tabular-nums; }
+.eco svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }

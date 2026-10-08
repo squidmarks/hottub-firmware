@@ -45,8 +45,8 @@ SETTINGS_NUMBERS = {
     "eco_temperature", "filter_cycle_after_no_flow_for", "filter_cycle_length",
     "button_session_length", "quiet_period",
 }
-SETTINGS_SELECTS = {"tub_button_type", "water_probe"}
-SETTINGS_SWITCHES = {"buzzer_enabled"}
+SETTINGS_SELECTS = {"tub_button_type", "water_probe", "eco_mode_after"}
+SETTINGS_SWITCHES = {"buzzer_enabled", "eco_mode"}
 
 if os.environ.get("HOTTUB_FAKE") == "1":
     controller: Controller = FakeController()

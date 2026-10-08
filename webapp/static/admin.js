@@ -2,6 +2,8 @@
 "use strict";
 
 const LABELS = {
+  eco_mode: ["Eco mode", "On: a set temperature falls back to eco after the period below. Off: it holds until changed."],
+  eco_mode_after: ["Back to eco after", "restarts whenever someone sets a temperature"],
   eco_temperature: ["Eco temperature (°F)", "Held during filter cycles. 34 °F = frost protection only."],
   filter_cycle_after_no_flow_for: ["Filter cycle after no flow for", "hours"],
   filter_cycle_length: ["Filter cycle length", "minutes"],

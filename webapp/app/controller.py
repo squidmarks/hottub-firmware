@@ -157,12 +157,14 @@ class FakeController(Controller):
             "tub_button_type": "Momentary", "water_probe": "Probe A (…5528)",
             "buzzer_enabled": True, "wi-fi_rssi": -61.0, "uptime": 3600.0,
             "keep_warm": False, "keep_warm_temperature": 102.0,
+            "eco_mode": True, "eco_mode_after": "4 h", "eco_countdown": 0.0,
             "probe_a___5528_": 98.4, "probe_b___2928_": 41.2,
             "1-wire_devices": "0x310b257cdc352928, 0x5b0b257ca8dc5528",
         }
         self._opts = {
             "tub_button_type": ["Momentary", "Latching"],
             "water_probe": ["Probe A (…5528)", "Probe B (…2928)"],
+            "eco_mode_after": ["2 h", "4 h", "8 h", "12 h", "24 h"],
         }
 
     async def run(self) -> None:
@@ -191,6 +193,9 @@ class FakeController(Controller):
             s["keep_warm"] = data["enable"]
             if data["enable"]:
                 s["keep_warm_temperature"] = data["target_f"]
+                s["eco_countdown"] = 4 * 3600.0 if s["eco_mode"] else 0.0
+            else:
+                s["eco_countdown"] = 0.0
                 s["activity"] = f"Keep warm at {data['target_f']:.1f}°F"
         elif name == "set_jets":
             lvl = data["level"]

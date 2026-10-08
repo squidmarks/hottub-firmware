@@ -225,6 +225,16 @@ a heating cycle starts whenever the water is below it and runs until reached
 choice ("we're here this week"), not a server command, so it does not expire;
 Stop turns it off, quiet pauses it. API action `keep_warm(enable, target_f)`.
 
+### 9.2 Eco mode (admin)
+
+`eco_mode` (switch) + `eco_after` (2/4/8/12/24 h, default 4 h). When on, a set
+temperature (Keep warm) falls back to eco after `eco_after`; the countdown
+restarts whenever a temperature is set, is saved to flash (a reboot neither
+resets nor ends it), and is published as `eco_countdown` (seconds). When off,
+a set temperature holds until changed or Stop. Detecting "a temperature was
+set" is done by edge detection in the control loop, not restore callbacks, so
+boot-time restores don't restart the countdown.
+
 ## 10. Tub button and quiet mode
 
 A pneumatic (air) button on the tub top drives a switch **inside the
@@ -308,6 +318,7 @@ Holds started from the page go through the same path as MQTT holds.
 ## 14. Revision history
 
 **2026-10-08**
+- Eco mode (§9.2): set temperatures fall back to eco after a chosen period.
 - Keep warm (§9.1). Power estimate calibrated against the house panel's
   circuit meter: pump LOW 515 W, heater 5140 W.
 

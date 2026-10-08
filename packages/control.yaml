@@ -17,6 +17,9 @@
 # A fault latches a heat lockout until the next hold or scheduled filter cycle.
 
 globals:
+  # Seconds until a set temperature falls back to eco (Eco mode). Saved to
+  # flash so a reboot neither resets nor ends the countdown early.
+  - { id: eco_remaining, type: int, restore_value: true, initial_value: '0' }
   - { id: pump_state, type: int, initial_value: '0' }
   - { id: pump_since, type: uint32_t, initial_value: '0' }
   - { id: last_desired, type: int, initial_value: '0' }
@@ -79,6 +82,17 @@ script:
           ESP_LOGI("hold", "Hold started: mode %d, %d s, target %.1f°F",
                    mode, secs, id(target_f).state);
           id(led_ack)->execute();
+
+  # Eco mode: (re)start the countdown for the current set temperature.
+  - id: eco_restart
+    then:
+      - lambda: |-
+          if (!id(eco_mode).state || !id(keep_warm).state) return;
+          static const int HOURS[] = {2, 4, 8, 12, 24};
+          const int i = (int) id(eco_after).active_index().value_or(1);
+          id(eco_remaining) = HOURS[i < 5 ? i : 1] * 3600;
+          id(eco_remaining_s).publish_state(id(eco_remaining));
+          ESP_LOGI("eco", "Back to eco in %d h", HOURS[i < 5 ? i : 1]);
 
   # Web "Stop": everything off, then a quiet period so an eco filter cycle
   # doesn't immediately restart the pump (heater run-on still applies).
@@ -180,6 +194,31 @@ interval:
 
           // §4: no relay is commanded in the first few seconds after boot.
           if (now < ${boot_hold_s} * 1000UL) return;
+
+          // --- Eco mode: a set temperature falls back to eco after a while -----
+          {
+            static bool first = true, last_keep = false, last_eco = false;
+            static float last_kf = NAN;
+            const bool k = id(keep_warm).state, e = id(eco_mode).state;
+            const float kf = id(keep_warm_f).state;
+            if (first) {
+              // Boot: keep the saved countdown; start one only if there's none.
+              first = false;
+              if (k && e && id(eco_remaining) <= 0) id(eco_restart)->execute();
+            } else if (k && e && ((!last_keep) || (!last_eco) || kf != last_kf)) {
+              id(eco_restart)->execute();  // turned on, eco just enabled, or new temp
+            }
+            if (!k || !e) id(eco_remaining) = 0;
+            last_keep = k; last_eco = e; last_kf = kf;
+            if (k && e && id(eco_remaining) > 0 && --id(eco_remaining) == 0) {
+              ESP_LOGI("eco", "Eco: set temperature expired, back to eco");
+              id(keep_warm).turn_off();
+            }
+            const int r = id(eco_remaining);
+            if (!id(eco_remaining_s).has_state() || r % 10 == 0 ||
+                (r == 0) != (id(eco_remaining_s).state == 0))
+              id(eco_remaining_s).publish_state(r);
+          }
 
           // --- Timers ---------------------------------------------------------
           if (id(runon_remaining) > 0) id(runon_remaining)--;
@@ -348,6 +387,15 @@ interval:
 # ---------------------------------------------------------------------------
 select:
   - platform: template
+    id: eco_after
+    name: Eco mode after
+    entity_category: config
+    options: ["2 h", "4 h", "8 h", "12 h", "24 h"]
+    initial_option: "4 h"
+    optimistic: true
+    restore_value: true
+    web_server: { sorting_group_id: grp_settings, sorting_weight: 2 }
+  - platform: template
     id: mode_select
     name: Mode
     disabled_by_default: true
@@ -366,6 +414,16 @@ select:
     web_server: { sorting_group_id: grp_settings, sorting_weight: 6 }
 
 switch:
+  # Eco mode (admin): a set temperature lasts eco_after, then back to eco.
+  # Off: a set temperature holds until changed or Stop.
+  - platform: template
+    id: eco_mode
+    name: Eco mode
+    entity_category: config
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+    web_server: { sorting_group_id: grp_settings, sorting_weight: 1 }
+
   # Keep warm: hold keep_warm_f indefinitely (survives reboots) until turned
   # off or Stop. Not a hold: the pump only runs to heat and for filter cycles.
   - platform: template
@@ -521,6 +579,16 @@ button:
 # ---------------------------------------------------------------------------
 # Web page: status
 # ---------------------------------------------------------------------------
+sensor:
+  - platform: template
+    id: eco_remaining_s
+    name: Eco countdown
+    unit_of_measurement: s
+    device_class: duration
+    accuracy_decimals: 0
+    update_interval: never
+    web_server: { sorting_group_id: grp_status, sorting_weight: 7 }
+
 text_sensor:
   - platform: template
     id: activity_text
