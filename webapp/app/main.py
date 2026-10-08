@@ -74,6 +74,16 @@ async def lifespan(_: FastAPI):
 app = FastAPI(title="Hot tub", lifespan=lifespan, docs_url=None, redoc_url=None)
 
 
+@app.middleware("http")
+async def revalidate_static(request: Request, call_next):
+    """Pages, scripts and styles must be revalidated on every load (cheap: the
+    ETag answers 304), or Safari keeps old scripts next to a new page."""
+    response = await call_next(request)
+    if not request.url.path.startswith("/api/"):
+        response.headers.setdefault("Cache-Control", "no-cache")
+    return response
+
+
 async def _do(coro_or_none) -> dict:
     try:
         if asyncio.iscoroutine(coro_or_none):
