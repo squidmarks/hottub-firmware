@@ -131,7 +131,8 @@ come) will override everything.
 - **Hold expiry:** heat drops immediately, and the pump keeps running for a 30 s
   grace period before going OFF. **Stop** skips the grace period.
 - **Heater run-on:** whenever heat drops, the pump keeps running on LOW for 60 s.
-- **Thermostat:** heat comes on at target − 0.5 °F and goes off at target + 0.5 °F.
+- **Thermostat:** heat comes on at target − 1 °F and goes off at the target, so
+  the water never goes above the setpoint.
   Heat is only requested once the pump has been on LOW for 10 s.
 - **Faults** latch a heat lockout until the next hold or scheduled filter cycle:
 

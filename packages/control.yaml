@@ -316,7 +316,7 @@ interval:
           // --- Thermostat (§6) ------------------------------------------------
           if (!water_ok) id(heating) = false;
           else if (water <= target - ${deadband_f}) id(heating) = true;
-          else if (water >= target + ${deadband_f}) id(heating) = false;
+          else if (water >= target) id(heating) = false;  // never heat past the setpoint
           id(heat_wanted) = heat_source && id(fault_latched) == 0 && id(heating);
           const bool heat_should = id(heat_wanted) && settled;
 

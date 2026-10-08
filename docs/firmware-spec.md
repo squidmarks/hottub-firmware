@@ -129,7 +129,8 @@ its next tick.
   final say.
 - Target: the hold's `target_f` during a HEAT hold, otherwise the
   **eco temperature** (only during a filter cycle).
-- Hysteresis: heat on at target − 0.5 °F, off at target + 0.5 °F (config constant).
+- Hysteresis: heat on at target − 1.0 °F, off **at** the target, so the water
+  never goes above the setpoint (config constant `deadband_f`).
 - Heat is always dropped before any pump change.
 
 ### 6.2 Eco temperature and filter cycles
@@ -319,6 +320,7 @@ Holds started from the page go through the same path as MQTT holds.
 ## 14. Revision history
 
 **2026-10-08**
+- Thermostat band moved below the setpoint: on at target − 1 °F, off at target.
 - Tub button and web Jets are a simple on/off; jets off returns to heating.
 - Eco mode (§9.2): set temperatures fall back to eco after a chosen period.
 - Keep warm (§9.1). Power estimate calibrated against the house panel's

@@ -7,7 +7,7 @@ substitutions:
   friendly_name: Hot Tub
 
   # Thermostat
-  deadband_f: "0.5"         # heat on at target - band, off at target + band
+  deadband_f: "1.0"         # heat on at target - band, off AT target (never above it)
   min_target_f: "60"
   max_target_f: "104"
   eco_f: "85"               # default eco temperature (settable on the web page)
