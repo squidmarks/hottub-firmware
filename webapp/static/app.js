@@ -73,7 +73,11 @@ function render() {
   $("eta").hidden = hrs == null;
   if (hrs != null) $("eta").textContent = readyText(hrs);
 
-  $("activity").textContent = s.connected === false ? "Controller offline" : friendlyActivity(s.activity);
+  // Status line only for what the dial doesn't already say.
+  const act = s.activity || "";
+  const showAct = s.connected === false || /^(Quiet|Button HIGH|Filter cycle, \d)/.test(act);
+  $("activity").hidden = !showAct;
+  $("activity").textContent = s.connected === false ? "Controller offline" : friendlyActivity(act);
   $("chipPump").textContent = `Pump ${s.pump ? s.pump.toLowerCase() : "—"}`;
   $("chipPump").classList.toggle("lit", s.pump === "LOW" || s.pump === "HIGH");
   $("chipHeat").textContent = heating ? "Heater on" : "Heater off";
@@ -93,7 +97,7 @@ function render() {
     $("keepOff").onclick = () => run("Back to eco", () => post("/api/keep-warm", { enable: false }));
   }
 
-  const jets = /^Button HIGH/.test(s.activity || "") ? "high" : /^Button LOW/.test(s.activity || "") ? "low" : "off";
+  const jets = /^Button HIGH/.test(s.activity || "") ? "high" : "off";
   document.querySelectorAll("#jets button").forEach((b) => b.classList.toggle("on", b.dataset.level === jets));
 
   $("power").textContent = s.power__estimated_ != null
@@ -150,7 +154,8 @@ $("heat").onclick = () => {
 };
 
 document.querySelectorAll("#jets button").forEach((b) => {
-  b.onclick = () => run(`Jets ${b.dataset.level}`, () => post("/api/jets", { level: b.dataset.level }));
+  b.onclick = () => run(b.dataset.level === "high" ? "Jets on" : "Jets off — quiet for a while",
+    () => post("/api/jets", { level: b.dataset.level }));
 });
 
 $("quiet").onclick = () => run("Quiet for a while", () => post("/api/quiet"));

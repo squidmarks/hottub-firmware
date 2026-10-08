@@ -115,8 +115,9 @@ script:
       - script.execute: led_ack
 
   # Jets: a button session layered over any hold/filter cycle, so heating
-  # resumes when it ends. level 0 ends the session, 1 = LOW, 2 = HIGH.
-  # Used by the tub button and by the web app / Home Assistant.
+  # resumes when it ends. 2 = HIGH (the jets), 1 = LOW (HA/API only).
+  # Turning jets OFF (0) starts the quiet period; heating resumes after it.
+  # (A session simply timing out goes straight back to normal heating.)
   - id: set_jets
     parameters:
       level: int
@@ -127,9 +128,9 @@ script:
             return;
           }
           if (level == 0) {
-            if (id(btn_mode) != 0) ESP_LOGI("button", "Jets off");
-            id(btn_mode) = 0;
-            id(btn_remaining) = 0;
+            ESP_LOGI("button", "Jets off -> quiet");
+            id(start_quiet)->execute();
+            return;
           } else {
             id(btn_mode) = level;
             id(btn_remaining) = (int) id(button_session_min).state * 60;
@@ -155,7 +156,7 @@ script:
           ESP_LOGI("button", "Quiet for %d min", (int) id(quiet_min).state);
           id(led_ack)->execute();
 
-  # Tub air button: OFF -> LOW -> HIGH -> quiet (all off).
+  # Tub air button: toggles jets (pump HIGH) on/off; off starts the quiet period.
   - id: button_press
     then:
       - lambda: |-
@@ -164,23 +165,19 @@ script:
           if (now - id(last_press_ms) < 400) return;   // bounce
           // Judge against where the pump is heading, and against a press made
           // a moment ago that the control loop hasn't acted on yet.
-          const int cur = (now - id(last_press_ms) < 2000) ? id(press_result) : id(last_desired);
-          const int session = (int) id(button_session_min).state * 60;
+          const bool jets_on = (now - id(last_press_ms) < 2000) ? id(press_result) == 2
+                                                                : id(btn_mode) == 2;
           int result;
-          if (cur == 0) {
-            id(set_jets)->execute(1);
-            result = 1;
-          } else if (cur == 1) {
+          if (jets_on) {
+            id(set_jets)->execute(0);  // off -> quiet
+            result = 0;
+          } else {
             id(set_jets)->execute(2);
             result = 2;
-          } else {
-            id(start_quiet)->execute();
-            result = 0;
           }
           id(last_press_ms) = now;
           id(press_result) = result;
-          if (result == 1) id(beep)->execute(1, 150);
-          else if (result == 2) id(beep)->execute(2, 150);
+          if (result == 2) id(beep)->execute(2, 150);
           else id(beep)->execute(1, 700);
 
 interval:

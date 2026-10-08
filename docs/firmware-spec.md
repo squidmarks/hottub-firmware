@@ -240,14 +240,13 @@ boot-time restores don't restart the countdown.
 A pneumatic (air) button on the tub top drives a switch **inside the
 enclosure** (air tube through a gland), which switches +24 V to **DI3**.
 
-| Pump (target) when pressed | Result |
+| Jets when pressed | Result |
 |---|---|
-| OFF | button session, pump **LOW** |
-| LOW (any reason, e.g. a heat hold or filter cycle) | button session, pump **HIGH** |
-| HIGH | **quiet period** |
+| off | jets **on** (pump HIGH) for the jets session |
+| on | jets **off**, which starts the **quiet period**; normal heating resumes after it |
 
 - Presses are judged against where the pump is heading, so two quick presses
-  go OFF → LOW → HIGH. 400 ms debounce.
+  can't double-toggle. 400 ms debounce.
 - **Button session:** 30 min by default (setting). Pressing again restarts it.
   When it ends, the pump follows whatever is underneath (hold, filter or idle).
 - **Quiet period:** everything off for 10 min by default (setting), **even
@@ -255,7 +254,9 @@ enclosure** (air tube through a gland), which switches +24 V to **DI3**.
   filter cycles resume when quiet ends. A press during quiet starts LOW and
   ends quiet. Heater run-on and freeze protection still override quiet.
 - Switch type is a setting: **momentary** (act on press) or **latching** (act
-  on every change of state). To be confirmed on the bench.
+  on every change of state). The installed switch is **latching**.
+- Turning jets off from the web app / API also starts the quiet period; a jets
+  session that simply times out goes straight back to normal heating.
 
 ## 11. Indicator lamps and buzzer
 
@@ -318,6 +319,7 @@ Holds started from the page go through the same path as MQTT holds.
 ## 14. Revision history
 
 **2026-10-08**
+- Tub button and web Jets are a simple on/off; jets off starts quiet.
 - Eco mode (§9.2): set temperatures fall back to eco after a chosen period.
 - Keep warm (§9.1). Power estimate calibrated against the house panel's
   circuit meter: pump LOW 515 W, heater 5140 W.

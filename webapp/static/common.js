@@ -33,7 +33,7 @@ function friendlyActivity(a) {
     .replace(/^Hold HEAT/, "Heating")
     .replace(/^Hold PUMP_LOW/, "Pump on low")
     .replace(/^Hold PUMP_HIGH/, "Pump on high")
-    .replace(/^Button HIGH/, "Jets high")
+    .replace(/^Button HIGH/, "Jets on")
     .replace(/^Button LOW/, "Jets low")
     .replace(/^Hold ending/, "Finishing up")
     .replace(/^Keep warm at/, "Keeping warm at")
