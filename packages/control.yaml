@@ -5,7 +5,8 @@
 #   1. quiet mode         everything off (button pressed while on HIGH)
 #   2. button session     LOW or HIGH for button_session_min
 #   3. hold               web/MQTT: PUMP_LOW, PUMP_HIGH or HEAT for N seconds
-#   4. filter cycle       LOW, heating to eco, when no flow for filter_interval_h
+#   4. filter cycle       LOW, heating to eco (or the Keep warm target), when no
+#                         flow for filter_interval_h or the water is below it
 #   5. grace              pump keeps running briefly after a hold expires
 #   6. idle               OFF
 # Heater run-on overrides OFF (never quiet-vs-hot-heater), and freeze
@@ -93,6 +94,10 @@ script:
           id(btn_remaining) = 0;
           id(quiet_remaining) = (int) id(quiet_min).state * 60;
           id(filter_active) = false;
+          if (id(keep_warm).state) {
+            ESP_LOGI("hold", "Stop: Keep warm off");
+            id(keep_warm).turn_off();
+          }
       - script.execute: led_ack
 
   # Jets: a button session layered over any hold/filter cycle, so heating
@@ -207,12 +212,15 @@ interval:
           const float water = id(water_temp).state;
           const bool water_ok = !std::isnan(water) &&
                                 (now - id(water_last_ms)) < ${sensor_stale_s} * 1000UL;
-          const float eco = id(eco_f).state;
+          // Idle maintenance temperature: Keep warm's target when it's on,
+          // otherwise eco. Filter cycles heat to it and start early below it.
+          const bool keep = id(keep_warm).state;
+          const float eco = keep ? id(keep_warm_f).state : id(eco_f).state;
 
           // --- Filter cycle ---------------------------------------------------
           const bool filter_heating = id(filter_active) && id(hold_mode) == 0 && id(heat_wanted);
           if (id(filter_active) && id(filter_remaining) == 0 &&
-              !(filter_heating && id(filter_elapsed) < ${filter_max_min} * 60)) {
+              !(filter_heating && (keep || id(filter_elapsed) < ${filter_max_min} * 60))) {
             ESP_LOGI("filter", "Filter cycle done after %d min", id(filter_elapsed) / 60);
             id(filter_active) = false;
           }
@@ -223,7 +231,7 @@ interval:
               if (id(fault_latched) != 0) ESP_LOGI("fault", "Fault cleared: retrying on filter cycle");
               id(fault_latched) = 0;
             } else if (water_ok && id(fault_latched) == 0 && water < eco - ${deadband_f}) {
-              why = "water below eco";
+              why = keep ? "water below keep-warm target" : "water below eco";
             }
             if (why != nullptr) {
               id(filter_active) = true;
@@ -310,11 +318,21 @@ interval:
             activity = std::string("Button ") + PUMP_NAMES[id(btn_mode)] + ", " + hms(id(btn_remaining)) + " left";
           else if (id(hold_mode) != 0)
             activity = std::string("Hold ") + MODE_NAMES[id(hold_mode)] + ", " + hms(id(hold_remaining)) + " left";
+          else if (id(filter_active) && keep && id(heat_wanted)) {
+            char b[48];
+            snprintf(b, sizeof(b), "Keep warm, heating to %.1f°F", eco);
+            activity = b;
+          }
           else if (id(filter_active))
             activity = id(filter_remaining) > 0 ? "Filter cycle, " + hms(id(filter_remaining)) + " left"
                                                 : std::string("Filter cycle, heating to eco");
           else if (id(runon_remaining) > 0) activity = "Heater run-on";
           else if (id(grace_remaining) > 0) activity = "Hold ending";
+          else if (keep) {
+            char b[48];
+            snprintf(b, sizeof(b), "Keep warm at %.1f°F", eco);
+            activity = b;
+          }
           else {
             int next = (int) (id(filter_interval_h).state * 3600) - id(no_flow_s);
             activity = "Idle, filter cycle in " + hms(next > 0 ? next : 0);
@@ -347,7 +365,36 @@ select:
     restore_value: true
     web_server: { sorting_group_id: grp_settings, sorting_weight: 6 }
 
+switch:
+  # Keep warm: hold keep_warm_f indefinitely (survives reboots) until turned
+  # off or Stop. Not a hold: the pump only runs to heat and for filter cycles.
+  - platform: template
+    id: keep_warm
+    name: Keep warm
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+    on_turn_on:
+      - logger.log:
+          format: "Keep warm ON at %.1f°F"
+          args: ['id(keep_warm_f).state']
+      - script.execute: led_ack
+    on_turn_off:
+      - logger.log: "Keep warm OFF"
+    web_server: { sorting_group_id: grp_control, sorting_weight: 7 }
+
 number:
+  - platform: template
+    id: keep_warm_f
+    name: Keep warm temperature
+    unit_of_measurement: "°F"
+    min_value: ${min_target_f}
+    max_value: ${max_target_f}
+    step: 0.5
+    initial_value: 102
+    restore_value: true
+    optimistic: true
+    mode: box
+    web_server: { sorting_group_id: grp_control, sorting_weight: 8 }
   - platform: template
     id: target_f
     name: Target temperature

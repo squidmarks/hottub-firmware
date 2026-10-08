@@ -58,6 +58,24 @@ api:
     - action: quiet
       then:
         - script.execute: start_quiet
+    # Keep warm indefinitely at target_f (enable=true), or turn it off.
+    - action: keep_warm
+      variables:
+        enable: bool
+        target_f: float
+      then:
+        - lambda: |-
+            if (enable) {
+              if (std::isnan(target_f) || target_f < ${min_target_f} || target_f > ${max_target_f}) {
+                ESP_LOGW("api", "keep_warm: target %.1f out of range", target_f);
+                return;
+              }
+              id(keep_warm_f).make_call().set_value(target_f).perform();
+              id(quiet_remaining) = 0;
+              id(keep_warm).turn_on();
+            } else {
+              id(keep_warm).turn_off();
+            }
 
 # Local control/status page at http://hottub.local/
 web_server:

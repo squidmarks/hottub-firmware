@@ -27,9 +27,9 @@ substitutions:
   sensor_stale_s: "30"
 
   # Estimated loads for power tracking (240 V)
-  pump_low_w: "1056"        # 4.4 A
-  pump_high_w: "2880"       # 12 A
-  heater_w: "4800"          # 12 ohm
+  pump_low_w: "515"         # measured on the panel circuit 2026-10-08
+  pump_high_w: "2880"       # 12 A nameplate; not yet measured
+  heater_w: "5140"          # measured (12 Ω at ~248 V), 2026-10-08
 
 esphome:
   name: ${device_name}
