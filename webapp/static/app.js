@@ -87,15 +87,6 @@ function render() {
   $("fault").hidden = !f;
   if (f) $("fault").textContent = FAULTS[f] || f;
 
-  // Without Eco mode a set temperature holds until changed: say so, with a way out.
-  const holding = s.keep_warm && !s.eco_mode;
-  $("keepNote").hidden = !holding;
-  if (holding) {
-    $("keepNote").innerHTML =
-      `Holding ${units.show(s.keep_warm_temperature, 0)}${U} until changed. ` +
-      `<button class="link" id="keepOff">Back to eco</button>`;
-    $("keepOff").onclick = () => run("Back to eco", () => post("/api/keep-warm", { enable: false }));
-  }
 
   const jets = /^Button HIGH/.test(s.activity || "") ? "high" : "off";
   document.querySelectorAll("#jets button").forEach((b) => b.classList.toggle("on", b.dataset.level === jets));
