@@ -85,14 +85,14 @@ main { max-width: 560px; margin: 0 auto; padding: 0 16px 24px; }
 
 /* --- the big temperature ------------------------------------------------ */
 .hero { text-align: center; padding: 2px 0 0; }
-.ring { position: relative; width: min(68vw, 260px); aspect-ratio: 1; margin: 0 auto; }
+.ring { position: relative; width: min(70vw, 280px); aspect-ratio: 1; margin: 0 auto; container-type: inline-size; }
 .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
 .ring circle { fill: none; stroke-width: 10; }
 .ring .track { stroke: var(--track); }
 .ring .arc { stroke: var(--accent); stroke-linecap: round; stroke-dasharray: 0 999; transition: stroke-dasharray .6s ease; }
 .ring.heating .arc { stroke: var(--hot); }
 .reading { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.temp { font-size: clamp(52px, 17vw, 72px); font-weight: 650; letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums; }
+.temp { font-size: 21cqw; font-weight: 650; letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums; }
 .deg { font-size: .4em; font-weight: 500; vertical-align: top; margin-left: 2px; color: var(--muted); }
 .sub { margin-top: 4px; color: var(--muted); font-size: 14px; }
 .out { margin-top: 10px; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
