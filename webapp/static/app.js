@@ -160,7 +160,7 @@ document.querySelectorAll("#jets button").forEach((b) => {
 
 $("quiet").onclick = () => run("Quiet for a while", () => post("/api/quiet"));
 $("stop").onclick = () => {
-  if (confirm("Stop heating, jets and Keep warm?")) run("Stopped", () => post("/api/stop"));
+  if (confirm("Cancel the set temperature and jets, and drop back to the eco temperature?")) run("Eco mode", () => post("/api/stop"));
 };
 
 const chart = tempChart($("chart"), $("chartSvg"), $("tip"));
