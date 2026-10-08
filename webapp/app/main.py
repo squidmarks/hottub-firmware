@@ -65,7 +65,8 @@ if os.environ.get("HOTTUB_FAKE") == "1":
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    tasks = [asyncio.create_task(controller.run()), asyncio.create_task(history.run())]
+    tasks = [asyncio.create_task(controller.run()), asyncio.create_task(history.run()),
+             asyncio.create_task(history.fit_loop())]
     yield
     for t in tasks:
         t.cancel()
@@ -167,6 +168,12 @@ async def keep_warm(body: KeepWarm):
     log.info("keep warm %s %s", "on" if body.enable else "off", body.target_f or "")
     return await _do(controller.action("keep_warm", enable=body.enable,
                                        target_f=body.target_f or 0.0))
+
+
+@app.get("/api/model")
+async def get_model():
+    """The fitted heat model (or null until there's enough history)."""
+    return history.model
 
 
 @app.get("/api/history")

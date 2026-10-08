@@ -5,6 +5,33 @@ const MIN_F = 60, MAX_F = 104;
 let state = {};
 let targetF = null;        // what the stepper shows (°F); null until first state
 let targetTouched = false; // the viewer changed it, so don't overwrite from the tub
+// Heat model from the web app's history (P °F/h heater gain, k /h loss rate).
+let model = null;
+async function loadModel() {
+  try { const r = await fetch("/api/model"); if (r.ok) model = await r.json(); } catch {}
+}
+loadModel();
+setInterval(loadModel, 10 * 60 * 1000);
+
+// Hours to warm from t0 to t1 with the outside at out: dT/dt = P - k(T - out).
+function hoursToReach(t0, t1, out) {
+  if (!model || t0 == null || out == null) return null;
+  const { P, k } = model;
+  const a = P - k * (t0 - out), b = P - k * (t1 - out);
+  if (b <= 0.2) return Infinity;           // losses would match the heater first
+  return k > 0 ? Math.log(a / b) / k : (t1 - t0) / P;
+}
+
+// "ready ≈ 8:30 PM" (rounded to 5 min; weekday added if not today).
+function readyText(hours) {
+  if (hours === Infinity) return "may not reach target";
+  const at = new Date(Date.now() + hours * 3600e3);
+  at.setMinutes(Math.round(at.getMinutes() / 5) * 5, 0, 0);
+  const sameDay = at.toDateString() === new Date().toDateString();
+  const t = at.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+  return `ready ≈ ${sameDay ? "" : at.toLocaleDateString(undefined, { weekday: "short" }) + " "}${t}`;
+}
+
 // Eco countdown: the controller reports it every ~10 s; tick it locally between.
 let ecoLeft = 0, ecoAt = 0;
 
@@ -40,6 +67,11 @@ function render() {
   $("heroSub").textContent =
     goal == null ? "Water" : heating ? `heating to ${units.show(goal, 0)}${U}` : `holding ${units.show(goal, 0)}${U}`;
   renderEco();
+  // Arrival time while heating toward a goal.
+  const hrs = goal != null && (heating || s.heat_requested) && water != null && water < goal - 0.2
+    ? hoursToReach(water, goal, s.outdoor_temperature) : null;
+  $("eta").hidden = hrs == null;
+  if (hrs != null) $("eta").textContent = readyText(hrs);
 
   $("activity").textContent = s.connected === false ? "Controller offline" : friendlyActivity(s.activity);
   $("chipPump").textContent = `Pump ${s.pump ? s.pump.toLowerCase() : "—"}`;

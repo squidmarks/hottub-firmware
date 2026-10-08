@@ -223,3 +223,5 @@ footer a { color: var(--accent); text-decoration: none; }
 .eco { display: flex; align-items: center; gap: 4px; margin-top: 6px; font-size: 14px; font-weight: 600;
   color: var(--eco); font-variant-numeric: tabular-nums; }
 .eco svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+.eta { margin-top: 2px; font-size: 14px; font-weight: 600; color: var(--hot); font-variant-numeric: tabular-nums; }

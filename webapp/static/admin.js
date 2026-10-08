@@ -36,6 +36,9 @@ const DIAG = [
   ["Probe A (…5528)", (s) => fmtT(s.probe_a___5528_)],
   ["Probe B (…2928)", (s) => fmtT(s.probe_b___2928_)],
   ["1-Wire devices", (s) => s["1-wire_devices"]],
+  ["Heat model", () => model
+    ? `heater +${model.P.toFixed(1)} °F/h, loss ${model.k.toFixed(3)}/h per °F (${model.heat_windows} heating, ${model.cool_windows} cooling windows)`
+    : "learning (needs a few hours of heating)"],
   ["Wi-Fi", (s) => s["wi-fi_rssi"] == null ? "--" : `${Math.round(s["wi-fi_rssi"])} dBm`],
   ["Uptime", (s) => s.uptime == null ? "--" : fmtDur(s.uptime)],
 ];
@@ -48,6 +51,8 @@ const fmtDur = (s) => {
 };
 
 let state = {};
+let model = null;
+(async () => { try { const r = await fetch("/api/model"); if (r.ok) model = await r.json(); } catch {} })();
 let meta = {};
 const editing = new Set(); // inputs with focus aren't overwritten by live updates
 
