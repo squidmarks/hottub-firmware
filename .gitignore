@@ -1,3 +1,5 @@
 secrets.yaml
 .esphome/
 .claude/
+__pycache__/
+*.pyc
