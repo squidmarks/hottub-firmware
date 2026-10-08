@@ -216,6 +216,15 @@ hottub/<unit>/command  (subscribed)
   cycles, eco and freeze protection keep running locally.
 - Republish full state on reconnect.
 
+### 9.1 Keep warm (deliberate exception to expiring holds)
+
+`keep_warm` (switch) + `keep_warm_f` (number), both restored across reboots:
+while on, the idle maintenance temperature is `keep_warm_f` instead of eco, so
+a heating cycle starts whenever the water is below it and runs until reached
+(no 4 h cap). The pump does not run continuously. It is a local, explicit
+choice ("we're here this week"), not a server command, so it does not expire;
+Stop turns it off, quiet pauses it. API action `keep_warm(enable, target_f)`.
+
 ## 10. Tub button and quiet mode
 
 A pneumatic (air) button on the tub top drives a switch **inside the
@@ -297,6 +306,10 @@ Holds started from the page go through the same path as MQTT holds.
 - Confirm final values for the thresholds and timings (all are config constants).
 
 ## 14. Revision history
+
+**2026-10-08**
+- Keep warm (§9.1). Power estimate calibrated against the house panel's
+  circuit meter: pump LOW 515 W, heater 5140 W.
 
 **Revision 2 (2026-09-27)**
 - Holds are **durations** (`hold_s`), not `hold_until` timestamps.

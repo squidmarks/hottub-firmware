@@ -5,8 +5,9 @@ stored on the controller. Talks to the controller over the ESPHome native API
 (the same encrypted connection Home Assistant uses; both can be connected).
 
 - **Everyone** (anyone who can reach the page): water/outdoor temperature,
-  what the tub is doing, heat to a temperature (60–104 °F, 1–4 h), jets
-  off/low/high, quiet, stop.
+  what the tub is doing, heat to a temperature (60–104 °F) for 1–4 h or
+  **Keep** it there until turned off, jets off/low/high, quiet, stop, and a
+  temperature chart (6 h / 24 h / 7 d).
 - **Admin** (`/admin`, `/api/admin/*`): eco temperature, filter cycle, jets
   session and quiet lengths, which probe is water, button type, buzzer, run a
   filter cycle now, and a live diagnostic table. The reverse proxy puts these
@@ -24,6 +25,7 @@ Every command maps to the controller's own time-bounded holds and limits.
 | `CONTROLLER_API_KEY` | `api_encryption_key` from the firmware's `secrets.yaml` |
 | `ADMIN_EMAILS` | comma-separated admin emails |
 | `GUEST_MAX_F`, `GUEST_MAX_MIN` | guest caps (default 104 °F, 240 min) |
+| `DATA_DIR` | where the history database lives (default `/data`; mount a volume) |
 | `HOTTUB_FAKE=1` | simulated tub, for UI work; also a stand-in admin, since there is no login in front |
 
 ## Run locally

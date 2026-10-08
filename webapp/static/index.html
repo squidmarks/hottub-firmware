@@ -37,16 +37,20 @@
           <div class="sub" id="heroSub">Water</div>
         </div>
       </div>
-      <div class="activity" id="activity">Connecting…</div>
-      <div class="chips">
-        <span class="chip" id="chipPump">Pump —</span>
-        <span class="chip" id="chipHeat">Heater —</span>
-        <span class="chip" id="chipOut">Outside —</span>
+      <div class="side">
+        <div class="outside">
+          <div class="label">Outside</div>
+          <div class="otemp"><span id="outdoor">--</span><span class="deg" id="outUnit">°F</span></div>
+        </div>
+        <div class="activity" id="activity">Connecting…</div>
+        <div class="chips">
+          <span class="chip" id="chipPump">Pump —</span>
+          <span class="chip" id="chipHeat">Heater —</span>
+        </div>
       </div>
     </section>
 
     <section class="card">
-      <h2>Heat</h2>
       <div class="stepper">
         <button class="step" id="down" aria-label="Lower">−</button>
         <div class="target"><span id="target">--</span><span class="deg" id="targetUnit">°F</span></div>
@@ -55,15 +59,16 @@
       <div class="seg" id="duration" role="radiogroup" aria-label="For how long">
         <button data-min="60">1 h</button>
         <button data-min="120" class="on">2 h</button>
-        <button data-min="180">3 h</button>
         <button data-min="240">4 h</button>
+        <button data-min="keep" title="Keep this temperature until turned off">Keep</button>
       </div>
       <button class="primary" id="heat">Heat</button>
+      <p class="keepnote" id="keepNote" hidden></p>
     </section>
 
-    <section class="card">
-      <h2>Jets</h2>
-      <div class="seg big" id="jets" role="radiogroup" aria-label="Jets">
+    <section class="card row">
+      <span class="rowlabel">Jets</span>
+      <div class="seg" id="jets" role="radiogroup" aria-label="Jets">
         <button data-level="off">Off</button>
         <button data-level="low">Low</button>
         <button data-level="high">High</button>
@@ -75,6 +80,27 @@
       <button class="danger" id="stop">Stop all</button>
     </section>
 
+    <section class="card chartcard">
+      <div class="charthead">
+        <h2>Temperature</h2>
+        <div class="seg small" id="range" role="radiogroup" aria-label="Time range">
+          <button data-h="6">6 h</button>
+          <button data-h="24" class="on">24 h</button>
+          <button data-h="168">7 d</button>
+        </div>
+      </div>
+      <div class="chart" id="chart">
+        <svg id="chartSvg" role="img" aria-label="Water and outside temperature over time"></svg>
+        <div class="tip" id="tip" hidden></div>
+      </div>
+      <div class="legend">
+        <span><i class="sw water"></i>Water</span>
+        <span><i class="sw out"></i>Outside</span>
+        <span><i class="sw target"></i>Target</span>
+        <span><i class="sw heat"></i>Heater on</span>
+      </div>
+    </section>
+
     <footer>
       <span id="power"></span>
       <a href="/admin">Admin</a>
@@ -83,6 +109,7 @@
 
   <div class="toast" id="toast" role="status"></div>
   <script src="common.js"></script>
+  <script src="chart.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

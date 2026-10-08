@@ -156,6 +156,7 @@ class FakeController(Controller):
             "button_session_length": 30.0, "quiet_period": 10.0,
             "tub_button_type": "Momentary", "water_probe": "Probe A (…5528)",
             "buzzer_enabled": True, "wi-fi_rssi": -61.0, "uptime": 3600.0,
+            "keep_warm": False, "keep_warm_temperature": 102.0,
             "probe_a___5528_": 98.4, "probe_b___2928_": 41.2,
             "1-wire_devices": "0x310b257cdc352928, 0x5b0b257ca8dc5528",
         }
@@ -186,6 +187,11 @@ class FakeController(Controller):
             s.update(activity="Quiet, 0:10:00 left", pump="OFF", ch3_heat=False, active_hold="OFF")
         elif name == "quiet":
             s.update(activity="Quiet, 0:10:00 left", pump="OFF", ch3_heat=False)
+        elif name == "keep_warm":
+            s["keep_warm"] = data["enable"]
+            if data["enable"]:
+                s["keep_warm_temperature"] = data["target_f"]
+                s["activity"] = f"Keep warm at {data['target_f']:.1f}°F"
         elif name == "set_jets":
             lvl = data["level"]
             s["pump"] = {"off": "LOW", "low": "LOW", "high": "HIGH"}[lvl]

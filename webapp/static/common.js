@@ -36,7 +36,9 @@ function friendlyActivity(a) {
     .replace(/^Button HIGH/, "Jets high")
     .replace(/^Button LOW/, "Jets low")
     .replace(/^Hold ending/, "Finishing up")
-    .replace(/, /, " · ");
+    .replace(/^Keep warm at/, "Keeping warm at")
+    .replace(/, /, " · ")
+    .replace(/(\d+(?:\.\d+)?)°F/g, (_, f) => `${units.show(+f, 0)}${units.label()}`);
 }
 
 async function post(url, body) {

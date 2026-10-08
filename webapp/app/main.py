@@ -26,6 +26,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from .controller import Controller, FakeController
+from .history import History, seed_fake
 
 logging.basicConfig(level=os.environ.get("LOG_LEVEL", "INFO"))
 log = logging.getLogger("hottub")
@@ -57,11 +58,17 @@ else:
     )
 
 
+history = History(Path(os.environ.get("DATA_DIR", "/data")) / "history.sqlite3", controller)
+if os.environ.get("HOTTUB_FAKE") == "1":
+    seed_fake(history)
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    task = asyncio.create_task(controller.run())
+    tasks = [asyncio.create_task(controller.run()), asyncio.create_task(history.run())]
     yield
-    task.cancel()
+    for t in tasks:
+        t.cancel()
 
 
 app = FastAPI(title="Hot tub", lifespan=lifespan, docs_url=None, redoc_url=None)
@@ -135,6 +142,28 @@ async def heat(body: Heat):
 async def jets(body: Jets):
     log.info("jets %s", body.level)
     return await _do(controller.action("set_jets", level=body.level))
+
+
+class KeepWarm(BaseModel):
+    enable: bool
+    target_f: float | None = Field(default=None, ge=GUEST_MIN_F, le=GUEST_MAX_F)
+
+
+@app.post("/api/keep-warm")
+async def keep_warm(body: KeepWarm):
+    """Hold a temperature until turned off (survives controller reboots)."""
+    if body.enable and body.target_f is None:
+        raise HTTPException(422, "target_f is required to turn Keep warm on")
+    log.info("keep warm %s %s", "on" if body.enable else "off", body.target_f or "")
+    return await _do(controller.action("keep_warm", enable=body.enable,
+                                       target_f=body.target_f or 0.0))
+
+
+@app.get("/api/history")
+async def get_history(hours: float = 24):
+    if not 0 < hours <= 24 * 60:
+        raise HTTPException(422, "hours must be 1-1440")
+    return history.query(hours)
 
 
 @app.post("/api/quiet")
