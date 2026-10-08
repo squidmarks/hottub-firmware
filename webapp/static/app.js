@@ -36,7 +36,7 @@ function render() {
   if (goal != null && water != null) frac = Math.max(0, Math.min(1, (water - MIN_F) / (goal - MIN_F)));
   $("arc").style.strokeDasharray = `${frac * C} ${C}`;
   $("ring").className = "ring" + (heating ? " heating" : goal != null ? " holding" : "");
-  $("heroSub").textContent = goal != null ? `to ${units.show(goal, 0)}${U}` : "Water";
+  $("heroSub").textContent = goal != null ? `heating to ${units.show(goal, 0)}${U}` : "Water";
 
   $("activity").textContent = s.connected === false ? "Controller offline" : friendlyActivity(s.activity);
   $("chipPump").textContent = `Pump ${s.pump ? s.pump.toLowerCase() : "—"}`;
@@ -48,9 +48,7 @@ function render() {
   $("fault").hidden = !f;
   if (f) $("fault").textContent = FAULTS[f] || f;
 
-  // Heat button and the Keep warm note.
-  const tShow = `${units.show(targetF, units.c ? 1 : 0)}${U}`;
-  $("heat").textContent = minutes === "keep" ? `Keep at ${tShow}` : `Heat to ${tShow} · ${minutes / 60} h`;
+  // Keep warm note (only while it's on).
   $("keepNote").hidden = !s.keep_warm;
   if (s.keep_warm) {
     $("keepNote").innerHTML =
@@ -88,13 +86,9 @@ $("up").onclick = () => stepTarget(+1);
 $("down").onclick = () => stepTarget(-1);
 $("unit").onclick = () => { units.toggle(); render(); chart.render(); };
 
-document.querySelectorAll("#duration button").forEach((b) => {
-  b.onclick = () => {
-    minutes = b.dataset.min === "keep" ? "keep" : +b.dataset.min;
-    document.querySelectorAll("#duration button").forEach((x) => x.classList.toggle("on", x === b));
-    render();
-  };
-});
+$("duration").onchange = (e) => {
+  minutes = e.target.value === "keep" ? "keep" : +e.target.value;
+};
 
 $("heat").onclick = () => {
   const t = `${units.show(targetF, units.c ? 1 : 0)}${units.label()}`;
@@ -121,14 +115,28 @@ $("stop").onclick = () => {
 };
 
 const chart = tempChart($("chart"), $("chartSvg"), $("tip"));
+
+// Now / History tabs share the top of the page.
+function showTab(hist) {
+  $("panelNow").hidden = hist;
+  $("panelHist").hidden = !hist;
+  $("tabNow").classList.toggle("on", !hist);
+  $("tabHist").classList.toggle("on", hist);
+  $("tabNow").setAttribute("aria-selected", String(!hist));
+  $("tabHist").setAttribute("aria-selected", String(hist));
+  store.set("tab", hist ? "hist" : "now");
+  if (hist) chart.load();
+}
+$("tabNow").onclick = () => showTab(false);
+$("tabHist").onclick = () => showTab(true);
 document.querySelectorAll("#range button").forEach((b) => {
   b.onclick = () => {
     document.querySelectorAll("#range button").forEach((x) => x.classList.toggle("on", x === b));
     chart.load(+b.dataset.h);
   };
 });
-chart.load(24);
-setInterval(() => document.visibilityState === "visible" && chart.load(), 60000);
+showTab(store.get("tab", "now") === "hist");
+setInterval(() => document.visibilityState === "visible" && !$("panelHist").hidden && chart.load(), 60000);
 
 live((s) => {
   setDot(s);

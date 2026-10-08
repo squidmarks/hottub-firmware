@@ -11,7 +11,7 @@
   <!-- iOS can't use an SVG home-screen icon: it needs the PNG. -->
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="style.css?v=202610081418">
+  <link rel="stylesheet" href="style.css?v=202610081425">
 </head>
 <body>
   <header class="bar">
@@ -26,7 +26,12 @@
     <div class="offline" id="offline" hidden>Can't reach the tub controller. Showing the last known state.</div>
     <div class="fault" id="fault" hidden></div>
 
-    <section class="hero" aria-live="polite">
+    <div class="tabs" role="tablist">
+      <button role="tab" id="tabNow" class="on" aria-selected="true">Now</button>
+      <button role="tab" id="tabHist" aria-selected="false">History</button>
+    </div>
+
+    <section class="hero" id="panelNow" aria-live="polite">
       <div class="ring" id="ring">
         <svg viewBox="0 0 200 200" aria-hidden="true">
           <circle class="track" cx="100" cy="100" r="88"/>
@@ -35,52 +40,17 @@
         <div class="reading">
           <div class="temp"><span id="water">--</span><span class="deg" id="waterUnit">°F</span></div>
           <div class="sub" id="heroSub">Water</div>
+          <div class="out">Outside <span id="outdoor">--</span><span id="outUnit">°F</span></div>
         </div>
       </div>
-      <div class="side">
-        <div class="outside">
-          <div class="label">Outside</div>
-          <div class="otemp"><span id="outdoor">--</span><span class="deg" id="outUnit">°F</span></div>
-        </div>
-        <div class="activity" id="activity">Connecting…</div>
-        <div class="chips">
-          <span class="chip" id="chipPump">Pump —</span>
-          <span class="chip" id="chipHeat">Heater —</span>
-        </div>
+      <div class="activity" id="activity">Connecting…</div>
+      <div class="chips">
+        <span class="chip" id="chipPump">Pump —</span>
+        <span class="chip" id="chipHeat">Heater —</span>
       </div>
     </section>
 
-    <section class="card">
-      <div class="stepper">
-        <button class="step" id="down" aria-label="Lower">−</button>
-        <div class="target"><span id="target">--</span><span class="deg" id="targetUnit">°F</span></div>
-        <button class="step" id="up" aria-label="Higher">+</button>
-      </div>
-      <div class="seg" id="duration" role="radiogroup" aria-label="For how long">
-        <button data-min="60">1 h</button>
-        <button data-min="120" class="on">2 h</button>
-        <button data-min="240">4 h</button>
-        <button data-min="keep" title="Keep this temperature until turned off">Keep</button>
-      </div>
-      <button class="primary" id="heat">Heat</button>
-      <p class="keepnote" id="keepNote" hidden></p>
-    </section>
-
-    <section class="card row">
-      <span class="rowlabel">Jets</span>
-      <div class="seg" id="jets" role="radiogroup" aria-label="Jets">
-        <button data-level="off">Off</button>
-        <button data-level="low">Low</button>
-        <button data-level="high">High</button>
-      </div>
-    </section>
-
-    <section class="actions">
-      <button class="secondary" id="quiet">Quiet</button>
-      <button class="danger" id="stop">Stop all</button>
-    </section>
-
-    <section class="card chartcard">
+    <section class="card chartcard" id="panelHist" hidden>
       <div class="charthead">
         <h2>Temperature</h2>
         <div class="seg small" id="range" role="radiogroup" aria-label="Time range">
@@ -101,6 +71,36 @@
       </div>
     </section>
 
+    <section class="card setrow">
+      <div class="stepper">
+        <button class="step" id="down" aria-label="Lower">−</button>
+        <div class="target"><span id="target">--</span><span class="deg" id="targetUnit">°F</span></div>
+        <button class="step" id="up" aria-label="Higher">+</button>
+      </div>
+      <select id="duration" aria-label="For how long">
+        <option value="60">1 h</option>
+        <option value="120" selected>2 h</option>
+        <option value="240">4 h</option>
+        <option value="keep">Keep</option>
+      </select>
+      <button class="primary" id="heat">Set</button>
+    </section>
+    <p class="keepnote" id="keepNote" hidden></p>
+
+    <section class="card row">
+      <span class="rowlabel">Jets</span>
+      <div class="seg" id="jets" role="radiogroup" aria-label="Jets">
+        <button data-level="off">Off</button>
+        <button data-level="low">Low</button>
+        <button data-level="high">High</button>
+      </div>
+    </section>
+
+    <section class="actions">
+      <button class="secondary" id="quiet">Quiet</button>
+      <button class="danger" id="stop">Stop all</button>
+    </section>
+
     <footer>
       <span id="power"></span>
       <a href="/admin">Admin</a>
@@ -108,8 +108,8 @@
   </main>
 
   <div class="toast" id="toast" role="status"></div>
-  <script src="common.js?v=202610081418"></script>
-  <script src="chart.js?v=202610081418"></script>
-  <script src="app.js?v=202610081418"></script>
+  <script src="common.js?v=202610081425"></script>
+  <script src="chart.js?v=202610081425"></script>
+  <script src="app.js?v=202610081425"></script>
 </body>
 </html>

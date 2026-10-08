@@ -28,6 +28,7 @@ function tempChart(box, svg, tip) {
     svg.innerHTML = "";
     tip.hidden = true;
     const W = box.clientWidth;
+    if (!W) return; // hidden tab: drawn when shown
     svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
     svg.setAttribute("height", H);
     const pts = (data && data.points) || [];
