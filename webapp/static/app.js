@@ -151,7 +151,13 @@ document.querySelectorAll("#jets button").forEach((b) => {
 
 $("quiet").onclick = () => run("Quiet for a while", () => post("/api/quiet"));
 $("stop").onclick = () => {
-  if (confirm("Cancel the set temperature and jets, and drop back to the eco temperature?")) run("Eco mode", () => post("/api/stop"));
+  ask({
+    title: "Switch to eco?",
+    message: "This cancels the set temperature and the jets. The tub goes quiet, then keeps the eco temperature.",
+    ok: "Eco Mode",
+    cancel: "Keep heating",
+    danger: true,
+  }).then((yes) => yes && run("Eco mode", () => post("/api/stop")));
 };
 
 const chart = tempChart($("chart"), $("chartSvg"), $("tip"));

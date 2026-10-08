@@ -85,3 +85,34 @@ function setDot(s) {
   dot.title = s == null ? "Reconnecting…" : up ? "Connected to the tub" : "Tub controller offline";
   $("offline").hidden = !(s && !s.connected);
 }
+
+// In-app confirmation dialog (instead of the browser's confirm()).
+//   if (await ask({ title, message, ok: "Eco Mode", cancel: "Keep heating" })) ...
+// Resolves true on the confirm button, false on cancel / Escape / tapping outside.
+function ask({ title, message, ok = "OK", cancel = "Cancel", danger = false }) {
+  let dlg = document.getElementById("askDialog");
+  if (!dlg) {
+    dlg = document.createElement("dialog");
+    dlg.id = "askDialog";
+    dlg.className = "ask";
+    dlg.innerHTML =
+      '<form method="dialog"><h3></h3><p></p><div class="askbtns">' +
+      '<button value="cancel" class="secondary"></button>' +
+      '<button value="ok" class="primary"></button></div></form>';
+    // Tap on the backdrop (outside the box) cancels.
+    dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close("cancel"); });
+    document.body.appendChild(dlg);
+  }
+  dlg.querySelector("h3").textContent = title;
+  dlg.querySelector("p").textContent = message || "";
+  const [no, yes] = dlg.querySelectorAll("button");
+  no.textContent = cancel;
+  yes.textContent = ok;
+  yes.className = danger ? "danger" : "primary";
+  dlg.returnValue = "cancel";
+  return new Promise((resolve) => {
+    dlg.addEventListener("close", () => resolve(dlg.returnValue === "ok"), { once: true });
+    dlg.showModal();
+    no.focus();
+  });
+}
