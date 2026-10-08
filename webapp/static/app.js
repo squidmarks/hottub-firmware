@@ -143,7 +143,7 @@ $("heat").onclick = () => {
 };
 
 document.querySelectorAll("#jets button").forEach((b) => {
-  b.onclick = () => run(b.dataset.level === "high" ? "Jets on" : "Jets off — quiet for a while",
+  b.onclick = () => run(b.dataset.level === "high" ? "Jets on" : "Jets off",
     () => post("/api/jets", { level: b.dataset.level }));
 });
 

@@ -115,9 +115,8 @@ script:
       - script.execute: led_ack
 
   # Jets: a button session layered over any hold/filter cycle, so heating
-  # resumes when it ends. 2 = HIGH (the jets), 1 = LOW (HA/API only).
-  # Turning jets OFF (0) starts the quiet period; heating resumes after it.
-  # (A session simply timing out goes straight back to normal heating.)
+  # resumes as soon as it ends. 2 = HIGH (the jets), 1 = LOW (HA/API only),
+  # 0 = off: straight back to normal heating. Quiet is its own action.
   - id: set_jets
     parameters:
       level: int
@@ -128,9 +127,9 @@ script:
             return;
           }
           if (level == 0) {
-            ESP_LOGI("button", "Jets off -> quiet");
-            id(start_quiet)->execute();
-            return;
+            if (id(btn_mode) != 0) ESP_LOGI("button", "Jets off");
+            id(btn_mode) = 0;
+            id(btn_remaining) = 0;
           } else {
             id(btn_mode) = level;
             id(btn_remaining) = (int) id(button_session_min).state * 60;
@@ -156,7 +155,7 @@ script:
           ESP_LOGI("button", "Quiet for %d min", (int) id(quiet_min).state);
           id(led_ack)->execute();
 
-  # Tub air button: toggles jets (pump HIGH) on/off; off starts the quiet period.
+  # Tub air button: toggles jets (pump HIGH) on/off; off = back to normal heating.
   - id: button_press
     then:
       - lambda: |-
@@ -169,7 +168,7 @@ script:
                                                                 : id(btn_mode) == 2;
           int result;
           if (jets_on) {
-            id(set_jets)->execute(0);  // off -> quiet
+            id(set_jets)->execute(0);  // off -> back to normal heating
             result = 0;
           } else {
             id(set_jets)->execute(2);

@@ -44,6 +44,7 @@ api:
       then:
         - script.execute: stop_hold
     # Jets layer over holds (like the tub button): "off" | "low" | "high".
+    # "off" goes straight back to normal heating.
     - action: set_jets
       variables:
         level: string

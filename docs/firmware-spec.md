@@ -243,7 +243,7 @@ enclosure** (air tube through a gland), which switches +24 V to **DI3**.
 | Jets when pressed | Result |
 |---|---|
 | off | jets **on** (pump HIGH) for the jets session |
-| on | jets **off**, which starts the **quiet period**; normal heating resumes after it |
+| on | jets **off**: straight back to normal heating |
 
 - Presses are judged against where the pump is heading, so two quick presses
   can't double-toggle. 400 ms debounce.
@@ -255,8 +255,8 @@ enclosure** (air tube through a gland), which switches +24 V to **DI3**.
   ends quiet. Heater run-on and freeze protection still override quiet.
 - Switch type is a setting: **momentary** (act on press) or **latching** (act
   on every change of state). The installed switch is **latching**.
-- Turning jets off from the web app / API also starts the quiet period; a jets
-  session that simply times out goes straight back to normal heating.
+- Turning jets off (button, web app or API) goes straight back to normal
+  heating, as does a session timing out. Quiet is a separate action.
 
 ## 11. Indicator lamps and buzzer
 
@@ -319,7 +319,7 @@ Holds started from the page go through the same path as MQTT holds.
 ## 14. Revision history
 
 **2026-10-08**
-- Tub button and web Jets are a simple on/off; jets off starts quiet.
+- Tub button and web Jets are a simple on/off; jets off returns to heating.
 - Eco mode (§9.2): set temperatures fall back to eco after a chosen period.
 - Keep warm (§9.1). Power estimate calibrated against the house panel's
   circuit meter: pump LOW 515 W, heater 5140 W.
