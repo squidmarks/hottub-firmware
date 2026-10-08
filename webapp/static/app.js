@@ -64,8 +64,6 @@ function render() {
   if (goal != null && water != null) frac = Math.max(0, Math.min(1, (water - MIN_F) / (goal - MIN_F)));
   $("arc").style.strokeDasharray = `${frac * C} ${C}`;
   $("ring").className = "ring" + (heating ? " heating" : goal != null ? " holding" : "");
-  $("heroSub").textContent =
-    goal == null ? "Water" : heating ? `heating to ${units.show(goal, 0)}${U}` : `holding ${units.show(goal, 0)}${U}`;
   renderEco();
   // Arrival time while heating toward a goal.
   const hrs = goal != null && (heating || s.heat_requested) && water != null && water < goal - 0.2
