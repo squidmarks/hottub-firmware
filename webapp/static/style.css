@@ -40,6 +40,8 @@
 }
 
 * { box-sizing: border-box; }
+/* `hidden` must win over any display rule (e.g. the flex eco line). */
+[hidden] { display: none !important; }
 html, body { margin: 0; }
 body {
   background: var(--bg);
