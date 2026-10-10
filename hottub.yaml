@@ -22,8 +22,8 @@ substitutions:
   # Holds and diagnostics
   max_hold_min: "240"
   filter_max_min: "240"     # cap on a filter cycle extended to reach eco
-  heater_check_min: "15"    # HEATER_UNKNOWN if heat on this long...
-  heater_min_rise_f: "0.5"  # ...and water rose less than this
+  heater_check_min: "30"    # HEATER_UNKNOWN warning if heat on this long...
+  heater_min_rise_f: "0.5"  # ...and water rose less than this above its lowest reading
   sensor_stale_s: "30"
 
   # Estimated loads for power tracking (240 V)

@@ -22,7 +22,7 @@ const units = {
 const FAULTS = {
   NO_FLOW: "No water flow detected. The heater is locked out until the next heat request.",
   OVER_TEMP: "The heater's high-limit switch tripped. Heater locked out.",
-  HEATER_UNKNOWN: "The heater has been on but the water isn't warming. Check the heater.",
+  HEATER_UNKNOWN: "Heads-up: the heater has run 30 min but the water reading isn't rising. Heating continues; if this keeps happening, check the heater and the water probe.",
   SENSOR_FAIL: "The water temperature probe isn't reporting. Heater locked out.",
 };
 

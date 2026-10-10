@@ -159,11 +159,11 @@ Evaluated only while the pump is settled on LOW (DI1/DI2 read 0 V otherwise):
 |---|---|
 | `NO_FLOW` | DI1 low |
 | `OVER_TEMP` | DI1 high, DI2 low (HL1 tripped) |
-| `HEATER_UNKNOWN` | CH3 on for 15 min and water rose < 0.5 °F. Suspect K3/CH3/wiring; don't guess further |
+| `HEATER_UNKNOWN` | **Warning only** (never locks out heat): CH3 on 30 min and the water rose < 0.5 °F above its lowest reading in that run. Suspect K3/CH3/wiring or the probe |
 | `SENSOR_FAIL` | Heat is wanted but the water probe is missing, reads implausibly, or is stale (> 30 s) |
 
-A fault **latches a heat lockout** until the next hold or interval filter
-cycle. Faults are logged, published over MQTT and shown on the lamps (§11).
+A fault (other than the `HEATER_UNKNOWN` warning) **latches a heat lockout**
+until the next Set, hold or interval filter cycle. Faults are logged, published over MQTT and shown on the lamps (§11).
 DS18B20 readings of exactly 85 °C (the power-on value) or outside −40…60 °C
 are discarded.
 
@@ -318,6 +318,11 @@ Holds started from the page go through the same path as MQTT holds.
 - Confirm final values for the thresholds and timings (all are config constants).
 
 ## 14. Revision history
+
+**2026-10-10**
+- `HEATER_UNKNOWN` is a warning (no lockout), 30 min, measured from the run's
+  lowest reading; Set clears latched faults. (A false alarm locked out heat
+  for 2 h on 10-09: the probe started the run on an inflated, falling reading.)
 
 **2026-10-08**
 - Thermostat band moved below the setpoint: on at target − 1 °F, off at target.

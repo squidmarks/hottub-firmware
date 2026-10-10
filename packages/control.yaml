@@ -40,7 +40,8 @@ globals:
   - { id: heat_wanted, type: bool, initial_value: 'false' }
   - { id: fault_latched, type: int, initial_value: '0' }
   - { id: heat_on_since, type: uint32_t, initial_value: '0' }
-  - { id: heat_start_temp, type: float, initial_value: '0' }
+  - { id: heat_start_temp, type: float, initial_value: '0' }  # lowest reading this heating run
+  - { id: heater_warn, type: bool, initial_value: 'false' }    # HEATER_UNKNOWN: warning only
   - { id: water_last_ms, type: uint32_t, initial_value: '0' }
 
 script:
@@ -79,6 +80,7 @@ script:
           id(grace_remaining) = 0;
           if (id(fault_latched) != 0) ESP_LOGI("fault", "Fault cleared by new hold");
           id(fault_latched) = 0;
+          id(heater_warn) = false;
           ESP_LOGI("hold", "Hold started: mode %d, %d s, target %.1f°F",
                    mode, secs, id(target_f).state);
           id(led_ack)->execute();
@@ -303,15 +305,30 @@ interval:
           if (settled && !id(sense_flow).state) live_fault = 1;
           else if (settled && !id(sense_temp).state) live_fault = 2;
           else if (heat_source && !water_ok) live_fault = 4;
-          else if (id(relay_heat).state && water_ok &&
-                   now - id(heat_on_since) >= ${heater_check_min} * 60000UL &&
-                   water - id(heat_start_temp) < ${heater_min_rise_f}) live_fault = 3;
+
+          // HEATER_UNKNOWN is a diagnostic, not a safety fault (PS1/HL1 protect
+          // the heater in hardware): it warns but never locks out heat. The rise
+          // is measured from the lowest reading of the run, because the probe
+          // can start a run on an inflated, falling reading.
+          if (id(relay_heat).state && water_ok) {
+            if (water < id(heat_start_temp)) id(heat_start_temp) = water;
+            const bool rising = water - id(heat_start_temp) >= ${heater_min_rise_f};
+            if (rising) id(heater_warn) = false;
+            else if (!id(heater_warn) && now - id(heat_on_since) >= ${heater_check_min} * 60000UL) {
+              id(heater_warn) = true;
+              ESP_LOGW("fault", "Warning HEATER_UNKNOWN: heater on %d min, water not rising (heating continues)",
+                       ${heater_check_min});
+              id(beep)->execute(3, 150);
+            }
+          }
           if (live_fault != 0 && id(fault_latched) == 0) {
             id(fault_latched) = live_fault;
             ESP_LOGW("fault", "Fault %s: heat locked out", FAULT_NAMES[live_fault]);
             id(beep)->execute(3, 150);
           }
-          const int shown_fault = live_fault != 0 ? live_fault : id(fault_latched);
+          const int shown_fault = live_fault != 0 ? live_fault
+                                : id(fault_latched) != 0 ? id(fault_latched)
+                                : id(heater_warn) ? 3 : 0;
 
           // --- Thermostat (§6) ------------------------------------------------
           if (!water_ok) id(heating) = false;
