@@ -47,9 +47,10 @@ On top of that, the firmware:
 | CH4 | red 24 V panel indicator |
 | CH5 | green 24 V panel indicator |
 | CH6 | 24 V buzzer |
+| CH8 | 12 V tub lights (12 V supply in the controller box) |
 | DI1 | SENSE_FLOW: high = pump on LOW and PS1 closed |
 | DI2 | SENSE_TEMP: high = flow present and HL1 not tripped |
-| DI3 | tub air button (pneumatic switch inside the enclosure, +24 V → DI3) |
+| DI3 | tub button (momentary, normally open; +24 V → DI3 when pressed) |
 | GPIO1 | 1-Wire bus, DS18B20 probes (4.7 kΩ pull-up at the header) |
 | I²C (GPIO42/41) | TCA9554 relay expander @ 0x20, PCF85063 RTC @ 0x51 |
 

@@ -42,10 +42,11 @@ because it conflicts with `wifi:` on this board.
 | **CH4** | LAMP_RED | Dry contact, COM→+24 V, NO→red 24 V panel indicator |
 | **CH5** | LAMP_GREEN | Dry contact, COM→+24 V, NO→green 24 V panel indicator |
 | **CH6** | BUZZER | Dry contact, COM→+24 V, NO→24 V buzzer |
-| CH7–CH8 | spare | driven OFF at boot |
+| CH7 | spare | driven OFF at boot |
+| **CH8** | LIGHTS | Dry contact switching the 12 V supply to the tub lights |
 | **DI1** | SENSE_FLOW | `24V_LOW` after PS1. High = pump on LOW **and** flow |
 | **DI2** | SENSE_TEMP | `24V_LOW` after PS1 **and** HL1. High = flow and hi-limit OK |
-| **DI3** | TUB_BUTTON | +24 V through the pneumatic tub-button switch (inside the enclosure) |
+| **DI3** | TUB_BUTTON | +24 V through the momentary (normally open) tub button |
 | DI4–DI8 | spare | unused |
 | Internal header, row 2 | 1-Wire bus | **GPIO1** data, 3V3/G power. 4.7 kΩ pull-up at the header |
 | VIN | 24 V DC | Mean Well HDR-30-24 |
@@ -236,28 +237,27 @@ a set temperature holds until changed or Stop. Detecting "a temperature was
 set" is done by edge detection in the control loop, not restore callbacks, so
 boot-time restores don't restart the countdown.
 
-## 10. Tub button and quiet mode
+## 10. Tub button, jets and lights
 
-A pneumatic (air) button on the tub top drives a switch **inside the
-enclosure** (air tube through a gland), which switches +24 V to **DI3**.
+A momentary, normally-open push button on the tub top switches +24 V to
+**DI3** while pressed. (It replaced the original pneumatic air switch, which
+held its contact open for 2-8 s per press; that, plus a wrong "latching"
+setting, made one press toggle the jets twice.)
 
-| Jets when pressed | Result |
-|---|---|
-| off | jets **on** (pump HIGH) for the jets session |
-| on | jets **off**: straight back to normal heating |
-
-- Presses are judged against where the pump is heading, so two quick presses
-  can't double-toggle. 400 ms debounce.
-- **Button session:** 30 min by default (setting). Pressing again restarts it.
-  When it ends, the pump follows whatever is underneath (hold, filter or idle).
-- **Quiet period:** everything off for 10 min by default (setting), **even
-  during a HEAT hold**. PUMP_LOW/PUMP_HIGH holds are cancelled. HEAT holds and
-  filter cycles resume when quiet ends. A press during quiet starts LOW and
-  ends quiet. Heater run-on and freeze protection still override quiet.
-- Switch type is a setting: **momentary** (act on press) or **latching** (act
-  on every change of state). The installed switch is **latching**.
-- Turning jets off (button, web app or API) goes straight back to normal
-  heating, as does a session timing out. Quiet is a separate action.
+- Debounce: a press must be steady 50 ms, a release 100 ms; a new press within
+  800 ms of a release is ignored as chatter; a press held over 15 s is ignored
+  as a stuck button.
+- **Short press** (released before `long_press_s`, default 1.0 s, a setting):
+  toggles the **jets** (pump HIGH session) on release. Jets off goes straight
+  back to normal heating.
+- **Long press**: the moment the hold reaches `long_press_s`, the **lights**
+  (CH8) toggle with a short chirp, while the button is still held; the release
+  does nothing.
+- `Tub button contact` setting: closes when pressed (installed) / opens when
+  pressed. `Last button press` (diagnostic) shows each press's length.
+- Jets sessions last 30 min (setting). **Quiet** is a separate web/API action.
+- Lights: a switch on CH8 (12 V supply in the box), also in the web app and HA;
+  keeps its state through a reboot.
 
 ## 11. Indicator lamps and buzzer
 
@@ -318,6 +318,10 @@ Holds started from the page go through the same path as MQTT holds.
 - Confirm final values for the thresholds and timings (all are config constants).
 
 ## 14. Revision history
+
+**2026-10-16**
+- Lights on CH8; tub button is a momentary NO push button: short press = jets,
+  long press (1 s, setting) = lights, toggled while held; debounced.
 
 **2026-10-10**
 - `HEATER_UNKNOWN` is a warning (no lockout), 30 min, measured from the run's

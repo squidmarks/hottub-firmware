@@ -10,7 +10,8 @@ const LABELS = {
   button_session_length: ["Jets session length", "minutes, for the tub button and the Jets control"],
   quiet_period: ["Quiet period", "minutes"],
   water_probe: ["Water probe", "the other probe is outdoor"],
-  tub_button_type: ["Tub button type", ""],
+  tub_button_contact: ["Tub button contact", ""],
+  long_press_for_lights: ["Long press for lights", "seconds; a shorter press toggles the jets"],
   buzzer_enabled: ["Buzzer", "beeps for tub-button presses and faults"],
 };
 const ORDER = Object.keys(LABELS);
@@ -30,6 +31,8 @@ const DIAG = [
   ["DI1 flow", (s) => onOff(s.di1_flow)],
   ["DI2 hi-limit OK", (s) => onOff(s.di2_temp_ok)],
   ["DI3 tub button", (s) => onOff(s.di3_tub_button)],
+  ["Last button press", (s) => s.last_button_press == null ? "--" : `${s.last_button_press.toFixed(2)} s`],
+  ["Lights (CH8)", (s) => onOff(s.lights)],
   ["Power (estimated)", (s) => s.power__estimated_ == null ? "--" : `${Math.round(s.power__estimated_)} W`],
   ["Energy today", (s) => s.energy_today == null ? "--" : `${s.energy_today.toFixed(2)} kWh`],
   ["Energy total", (s) => s.energy_total == null ? "--" : `${s.energy_total.toFixed(1)} kWh`],

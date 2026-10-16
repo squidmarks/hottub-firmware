@@ -11,7 +11,7 @@
   <!-- iOS can't use an SVG home-screen icon: it needs the PNG. -->
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="style.css?v=202610081425">
+  <link rel="stylesheet" href="style.css?v=202610161546">
 </head>
 <body>
   <header class="bar">
@@ -92,6 +92,14 @@
       </div>
     </section>
 
+    <section class="card row">
+      <span class="rowlabel">Lights</span>
+      <div class="seg" id="lights" role="radiogroup" aria-label="Lights">
+        <button data-on="0">Off</button>
+        <button data-on="1">On</button>
+      </div>
+    </section>
+
     <section class="actions">
       <button class="secondary" id="quiet">Quiet</button>
       <button class="danger" id="stop">Eco Mode</button>
@@ -104,8 +112,8 @@
   </main>
 
   <div class="toast" id="toast" role="status"></div>
-  <script src="common.js?v=202610081425"></script>
-  <script src="chart.js?v=202610081425"></script>
-  <script src="app.js?v=202610081425"></script>
+  <script src="common.js?v=202610161546"></script>
+  <script src="chart.js?v=202610161546"></script>
+  <script src="app.js?v=202610161546"></script>
 </body>
 </html>

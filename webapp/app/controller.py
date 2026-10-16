@@ -154,7 +154,8 @@ class FakeController(Controller):
             "power__estimated_": 5856.0, "energy_today": 12.4, "energy_total": 311.2,
             "filter_cycle_after_no_flow_for": 12.0, "filter_cycle_length": 60.0,
             "button_session_length": 30.0, "quiet_period": 10.0,
-            "tub_button_type": "Momentary", "water_probe": "Probe A (…5528)",
+            "tub_button_contact": "Closes when pressed", "water_probe": "Probe A (…5528)",
+            "lights": False, "long_press_for_lights": 1.0, "last_button_press": 0.35,
             "buzzer_enabled": True, "wi-fi_rssi": -61.0, "uptime": 3600.0,
             "keep_warm": False, "keep_warm_temperature": 102.0,
             "eco_mode": True, "eco_mode_after": "4 h", "eco_countdown": 0.0,
@@ -162,7 +163,7 @@ class FakeController(Controller):
             "1-wire_devices": "0x310b257cdc352928, 0x5b0b257ca8dc5528",
         }
         self._opts = {
-            "tub_button_type": ["Momentary", "Latching"],
+            "tub_button_contact": ["Closes when pressed", "Opens when pressed"],
             "water_probe": ["Probe A (…5528)", "Probe B (…2928)"],
             "eco_mode_after": ["2 h", "4 h", "8 h", "12 h", "24 h"],
         }
@@ -227,5 +228,6 @@ class FakeController(Controller):
             "filter_cycle_after_no_flow_for": {"min": 1, "max": 48, "step": 1},
             "filter_cycle_length": {"min": 10, "max": 240, "step": 5},
             "button_session_length": {"min": 5, "max": 120, "step": 5},
+            "long_press_for_lights": {"min": 0.5, "max": 10, "step": 0.1},
             "quiet_period": {"min": 1, "max": 60, "step": 1},
         }.get(object_id)

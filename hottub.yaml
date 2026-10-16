@@ -18,6 +18,8 @@ substitutions:
   grace_s: "30"             # pump keeps running after a hold expires
   flow_settle_s: "10"       # time on LOW before DI1/DI2 are trusted
   boot_hold_s: "5"          # no relay commands this soon after boot
+  button_lockout_ms: "800"  # ignore tub-button presses this soon after a release
+  button_stuck_s: "15"      # ...and presses held longer than this
 
   # Holds and diagnostics
   max_hold_min: "240"

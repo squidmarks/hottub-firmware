@@ -88,6 +88,7 @@ function render() {
 
   const jets = /^Button HIGH/.test(s.activity || "") ? "high" : "off";
   document.querySelectorAll("#jets button").forEach((b) => b.classList.toggle("on", b.dataset.level === jets));
+  document.querySelectorAll("#lights button").forEach((b) => b.classList.toggle("on", (b.dataset.on === "1") === !!s.lights));
 
   $("power").textContent = s.power__estimated_ != null
     ? `${(s.power__estimated_ / 1000).toFixed(1)} kW now · ${(s.energy_today ?? 0).toFixed(1)} kWh today` : "";
@@ -141,6 +142,11 @@ $("heat").onclick = () => {
     targetTouched = false;
   });
 };
+
+document.querySelectorAll("#lights button").forEach((b) => {
+  b.onclick = () => run(b.dataset.on === "1" ? "Lights on" : "Lights off",
+    () => post("/api/lights", { on: b.dataset.on === "1" }));
+});
 
 document.querySelectorAll("#jets button").forEach((b) => {
   b.onclick = () => run(b.dataset.level === "high" ? "Jets on" : "Jets off",

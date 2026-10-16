@@ -43,9 +43,9 @@ GUEST_MAX_MIN = int(os.environ.get("GUEST_MAX_MIN", "240"))
 # What the admin may change, by controller object_id.
 SETTINGS_NUMBERS = {
     "eco_temperature", "filter_cycle_after_no_flow_for", "filter_cycle_length",
-    "button_session_length", "quiet_period",
+    "button_session_length", "quiet_period", "long_press_for_lights",
 }
-SETTINGS_SELECTS = {"tub_button_type", "water_probe", "eco_mode_after"}
+SETTINGS_SELECTS = {"tub_button_contact", "water_probe", "eco_mode_after"}
 SETTINGS_SWITCHES = {"buzzer_enabled", "eco_mode"}
 
 if os.environ.get("HOTTUB_FAKE") == "1":
@@ -153,6 +153,16 @@ async def heat(body: Heat):
 async def jets(body: Jets):
     log.info("jets %s", body.level)
     return await _do(controller.action("set_jets", level=body.level))
+
+
+class Lights(BaseModel):
+    on: bool
+
+
+@app.post("/api/lights")
+async def lights(body: Lights):
+    log.info("lights %s", "on" if body.on else "off")
+    return _call(controller.set_switch, "lights", body.on)
 
 
 class KeepWarm(BaseModel):

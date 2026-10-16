@@ -17,6 +17,10 @@
 # A fault latches a heat lockout until the next hold or scheduled filter cycle.
 
 globals:
+  - { id: btn_down, type: bool, initial_value: 'false' }
+  - { id: btn_down_ms, type: uint32_t, initial_value: '0' }
+  - { id: btn_release_ms, type: uint32_t, initial_value: '0' }
+  - { id: btn_long_beeped, type: bool, initial_value: 'false' }
   # Seconds until a set temperature falls back to eco (Eco mode). Saved to
   # flash so a reboot neither resets nor ends the countdown early.
   - { id: eco_remaining, type: int, restore_value: true, initial_value: '0' }
@@ -158,6 +162,40 @@ script:
           id(led_ack)->execute();
 
   # Tub air button: toggles jets (pump HIGH) on/off; off = back to normal heating.
+  # Tub button edges (debounced, already corrected for the contact type).
+  # Press: start timing. Held past long_press_s: lights toggle right then (the
+  # 100 ms interval below), so you see them change while still holding.
+  # Release before that: jets (button_press). Release after a long press: nothing.
+  # A press within ${button_lockout_ms} ms of the last release is contact chatter
+  # and ignored; a press held over ${button_stuck_s} s is ignored as a stuck button.
+  - id: tub_button_edge
+    parameters:
+      pressed: bool
+    then:
+      - lambda: |-
+          const uint32_t now = millis();
+          if (now < ${boot_hold_s} * 1000UL) return;
+          if (pressed) {
+            if (id(btn_down) || now - id(btn_release_ms) < ${button_lockout_ms}) return;
+            id(btn_down) = true;
+            id(btn_down_ms) = now;
+            id(btn_long_beeped) = false;
+            return;
+          }
+          if (!id(btn_down)) return;
+          id(btn_down) = false;
+          id(btn_release_ms) = now;
+          const float held = (now - id(btn_down_ms)) / 1000.0f;
+          id(last_press_s).publish_state(held);
+          if (id(btn_long_beeped)) {
+            ESP_LOGI("button", "Long press released (%.1f s); lights already toggled", held);
+          } else if (held > ${button_stuck_s}) {
+            ESP_LOGW("button", "Ignored a %.1f s press (stuck button?)", held);
+          } else {
+            ESP_LOGI("button", "Short press (%.2f s): jets", held);
+            id(button_press)->execute();
+          }
+
   - id: button_press
     then:
       - lambda: |-
@@ -182,6 +220,19 @@ script:
           else id(beep)->execute(1, 700);
 
 interval:
+  # Long press: the moment a held press counts as "long", toggle the lights
+  # (with a chirp), while the button is still held.
+  - interval: 100ms
+    then:
+      - lambda: |-
+          if (id(btn_down) && !id(btn_long_beeped) &&
+              millis() - id(btn_down_ms) >= id(long_press_s).state * 1000.0f) {
+            id(btn_long_beeped) = true;  // also marks "long press handled"
+            ESP_LOGI("button", "Long press: lights %s", id(lights).state ? "off" : "on");
+            id(lights).toggle();
+            id(beep)->execute(1, 80);
+            id(led_ack)->execute();
+          }
   - interval: 1s
     then:
       - lambda: |-
@@ -417,11 +468,11 @@ select:
     optimistic: true
     web_server: { sorting_group_id: grp_control, sorting_weight: 1 }
   - platform: template
-    id: button_type
-    name: Tub button type
+    id: button_contact
+    name: Tub button contact
     entity_category: config
-    options: ["Momentary", "Latching"]
-    initial_option: "Momentary"
+    options: ["Closes when pressed", "Opens when pressed"]
+    initial_option: "Closes when pressed"
     optimistic: true
     restore_value: true
     web_server: { sorting_group_id: grp_settings, sorting_weight: 6 }
@@ -546,6 +597,19 @@ number:
     mode: box
     web_server: { sorting_group_id: grp_settings, sorting_weight: 4 }
   - platform: template
+    id: long_press_s
+    name: Long press for lights
+    entity_category: config
+    unit_of_measurement: s
+    min_value: 0.5
+    max_value: 10
+    step: 0.1
+    initial_value: 1.0
+    restore_value: true
+    optimistic: true
+    mode: box
+    web_server: { sorting_group_id: grp_settings, sorting_weight: 7 }
+  - platform: template
     id: quiet_min
     name: Quiet period
     entity_category: config
@@ -593,6 +657,14 @@ button:
 # Web page: status
 # ---------------------------------------------------------------------------
 sensor:
+  - platform: template
+    id: last_press_s
+    name: Last button press
+    entity_category: diagnostic
+    unit_of_measurement: s
+    accuracy_decimals: 2
+    update_interval: never
+    web_server: { sorting_group_id: grp_diag, sorting_weight: 5 }
   - platform: template
     id: eco_remaining_s
     name: Eco countdown

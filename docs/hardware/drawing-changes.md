@@ -25,11 +25,12 @@ contacts, the same as CH1–CH3.
   (24 V buzzer) +, BZ1 − → 0 V.
 - No flyback diodes needed (lamps and a buzzer, not relay coils).
 
-**b. Tub air button**
-- **S1**, a pneumatic (air) switch mounted **inside the enclosure**: one side
-  → +24 V, other side → **DI3**, with DI COM → 0 V as for DI1/DI2. Label it
-  "S1 — tub air button (air tube from tub top)". Note it may be momentary or
-  latching.
+**b. Tub button and lights**
+- **S1**, a momentary normally-open push button on the tub top: one side
+  → +24 V, other side → **DI3**, with DI COM → 0 V as for DI1/DI2. (Replaced
+  the pneumatic air switch.)
+- **CH8 — LIGHTS**: a 12 V supply in the box; CH8 switches its + to the tub
+  lights (**LT1**), lights − → 12 V supply −.
 
 **c. Board block and footer text**
 - Board block: change "CH1–CH3 and DI1/DI2 used, CH4–CH8 and DI3–DI8 spare"
