@@ -82,7 +82,8 @@ tub has to keep running with no network.
 
 ## 4. Boot and reset behavior
 
-- **All relay outputs (CH1–CH8) default OFF/NC** on power-up, reset, OTA and
+- **All relay outputs (CH1–CH7) default OFF/NC** (CH8, the lights, restores
+  its last state) on power-up, reset, OTA and
   crash recovery, before any network connection.
 - No relay is commanded by control logic within the first **5 s** of boot.
   The only exception is the boot lamp test (both lamps on for 2 s).
